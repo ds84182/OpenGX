@@ -1,0 +1,16 @@
+[
+{
+  "modid": "OpenGX",
+  "name": "OpenGX",
+  "description": "",
+  "version": "${version}",
+  "mcversion": "${mcversion}",
+  "url": "",
+  "updateUrl": "",
+  "authorList": ["ds84182"],
+  "credits": "",
+  "logoFile": "",
+  "screenshots": [],
+  "dependencies": []
+}
+]
