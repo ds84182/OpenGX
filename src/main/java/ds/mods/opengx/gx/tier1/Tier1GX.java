@@ -50,7 +50,7 @@ public class Tier1GX implements IGX {
 	public GXServerTexture[] serverTextures = new GXServerTexture[16];
 	public GXTextureSlot[] textureSlots = new GXTextureSlot[4];
 	public GXMap[] maps = new GXMap[4]; //0 = very back, 3 = front
-	public GXSprite[] sprites = new GXSprite[64]; //sprites are drawn between map1 and map2
+	public GXSprite[] sprites = new GXSprite[128]; //sprites are drawn between map1 and map2
 
 	public int error = 0;
 	public static final int GX_ERROR_NONE = 0;
@@ -422,7 +422,7 @@ public class Tier1GX implements IGX {
 			maps[i] = null;
 		}
 		
-		for (int i=0; i<64; i++)
+		for (int i=0; i<128; i++)
 		{
 			sprites[i] = null;
 		}

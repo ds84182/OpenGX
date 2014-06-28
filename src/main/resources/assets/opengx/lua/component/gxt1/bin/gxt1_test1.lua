@@ -7,8 +7,8 @@ local monitor = gx.getMonitor()
 print(monitor)
 print("Configuring monitor")
 monitor.setSize(128, 128)
+print("Loading texture")
 gx.loadTexture(GX_TEXID1, "/lib/gx-t1/font.gxt", GX_FMT_BASE85) --uploads the texture to the GX
-print("Loaded texture")
 --GXTextures are a custom compressed texture format.
 --Most textures are converted to base85
 --that texture is a tiled font of some sort (Minecraft font perhaps?)

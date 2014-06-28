@@ -5,6 +5,7 @@ local component = require "component"
 gx.init()
 local monitor = gx.getMonitor()
 local w, h = monitor.getSize()
+print("Loading texture")
 gx.loadTexture(GX_TEXID1, "/lib/gx-t1/ballsprites.gxt", GX_FMT_BASE85)
 
 function createSprite() return
@@ -24,7 +25,8 @@ local images = {
 }
 
 local sprites = {}
-local spnum = 64
+local spnum = 128
+print("Generating sprites")
 for i=1, spnum do
 	local s = createSprite()
 	s.sprid = i

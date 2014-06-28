@@ -1,11 +1,13 @@
 package ds.mods.opengx.blocks;
 
-import cpw.mods.fml.common.FMLCommonHandler;
 import net.minecraft.block.Block;
+import net.minecraft.block.BlockPistonBase;
 import net.minecraft.block.material.Material;
-import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.world.World;
+import net.minecraftforge.common.util.ForgeDirection;
 import ds.mods.opengx.tileentity.TileEntityExternalMonitor;
 
 public class BlockExternalMonitor extends Block {
@@ -33,16 +35,13 @@ public class BlockExternalMonitor extends Block {
 	public int getRenderType() {
 		return -1;
 	}
-
+	
 	@Override
-	public boolean onBlockActivated(World world, int x,
-			int y, int z, EntityPlayer player,
-			int side, float cx, float cy,
-			float cz) {
-		TileEntityExternalMonitor extern = (TileEntityExternalMonitor) world.getTileEntity(x, y, z);
-		System.out.println(FMLCommonHandler.instance().getEffectiveSide());
-		extern.testMerge();
-		return true;
+	public void onBlockPlacedBy(World world, int x,
+			int y, int z, EntityLivingBase entity,
+			ItemStack item) {
+		TileEntityExternalMonitor mon = (TileEntityExternalMonitor) world.getTileEntity(x, y, z);
+		mon.facing = ForgeDirection.VALID_DIRECTIONS[BlockPistonBase.determineOrientation(world, x, y, z, entity)];
 	}
 
 }

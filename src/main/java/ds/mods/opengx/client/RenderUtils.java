@@ -2,6 +2,7 @@ package ds.mods.opengx.client;
 
 import net.minecraft.client.renderer.OpenGlHelper;
 import net.minecraft.client.renderer.Tessellator;
+import net.minecraftforge.common.util.ForgeDirection;
 
 import org.lwjgl.opengl.ARBMultitexture;
 import org.lwjgl.opengl.GL11;
@@ -9,6 +10,25 @@ import org.lwjgl.opengl.GL13;
 import org.lwjgl.opengl.GLContext;
 
 public class RenderUtils {
+	//DOWN, UP, NORTH, SOUTH, WEST, EAST
+	public static double[][] rotationFromFacing = new double[][]{
+		{-1D, 0D, 0D}, //DOWN
+		{ 1D, 0D, 0D}, //UP
+		{ 0D, 0D, 0D}, //NORTH
+		{ 0D, 1D, 0D}, //SOUTH
+		{ 0D, 1D, 0D}, //WEST
+		{ 0D,-1D, 0D}  //EAST
+	};
+	
+	public static double[][] rotationTranslationFromFacing = new double[][]{
+		{ 0D, 0D, 1D}, //DOWN
+		{ 0D, 0D, 0D}, //UP
+		{ 0D, 0D, 0D}, //NORTH
+		{ 1D, 0D, 1D}, //SOUTH
+		{ 0D, 0D, 1D}, //WEST
+		{ 1D, 0D, 0D}  //EAST
+	};
+	
 	public static void setColor(int r, int g, int b)
 	{
 		GL11.glColor3f(r/255F, g/255F, b/255F);
@@ -79,5 +99,14 @@ public class RenderUtils {
 			GL11.glEnable(GL11.GL_TEXTURE_2D);
 			GL13.glActiveTexture(OpenGlHelper.defaultTexUnit);
 		}
+	}
+	
+	public static void rotateFromFacing(ForgeDirection dir)
+	{
+		if (dir == ForgeDirection.NORTH) return;
+		double[] rotation = rotationFromFacing[dir.ordinal()];
+		double[] translation = rotationTranslationFromFacing[dir.ordinal()];
+		GL11.glTranslated(translation[0], translation[1], translation[2]);
+		GL11.glRotated(dir == ForgeDirection.SOUTH ? -180D : 90D, rotation[0], rotation[1], rotation[2]);
 	}
 }

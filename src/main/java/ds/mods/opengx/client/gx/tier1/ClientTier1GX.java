@@ -81,7 +81,7 @@ public class ClientTier1GX extends Tier1GX {
 		GL11.glEnable(GL11.GL_CULL_FACE);
         GL11.glEnable(GL11.GL_DEPTH_TEST);
         GL11.glEnable(GL11.GL_ALPHA_TEST);
-        GL11.glAlphaFunc(GL11.GL_GREATER, 0F);
+        GL11.glAlphaFunc(GL11.GL_GREATER, 0.5F);
 		for (int i=sprites.length-1; i>=0; i--)
 		{
 			GXSprite spr = sprites[i];

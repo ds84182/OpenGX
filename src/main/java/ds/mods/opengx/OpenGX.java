@@ -1,6 +1,7 @@
 package ds.mods.opengx;
 
 import net.minecraft.block.material.Material;
+import net.minecraftforge.common.MinecraftForge;
 import cpw.mods.fml.common.Mod;
 import cpw.mods.fml.common.Mod.EventHandler;
 import cpw.mods.fml.common.Mod.Instance;
@@ -69,6 +70,7 @@ public class OpenGX {
 		network.registerMessage(MonitorSizeMessageHandler.class, MonitorSizeMessage.class, 3, Side.CLIENT);
 		
 		NetworkRegistry.INSTANCE.registerGuiHandler(this, new GuiHandler());
+		MinecraftForge.EVENT_BUS.register(new Events());
 		
 		proxy.registerRenderers();
     }

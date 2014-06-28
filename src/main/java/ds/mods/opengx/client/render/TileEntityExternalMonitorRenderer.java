@@ -5,6 +5,7 @@ import java.util.Iterator;
 
 import net.minecraft.client.renderer.tileentity.TileEntitySpecialRenderer;
 import net.minecraft.tileentity.TileEntity;
+import net.minecraftforge.common.util.ForgeDirection;
 
 import org.lwjgl.opengl.GL11;
 
@@ -46,7 +47,11 @@ public class TileEntityExternalMonitorRenderer extends
 		
 		GL11.glPushMatrix();
 		GL11.glTranslated(var2, var4, var6);
-		GL11.glScaled(tile.mWidth, tile.mHeight, 1D);
+		int[] dx = tile.facingToOrient[tile.facing.ordinal()][0];
+		int[] dy = tile.facingToOrient[tile.facing.ordinal()][1];
+		int[] dz = tile.facingToOrient[tile.facing.ordinal()][2];
+		GL11.glScaled((tile.mWidth*dx[0])+(tile.mHeight*dx[1]), (tile.mWidth*dy[0])+(tile.mHeight*dy[1]), (tile.mWidth*dz[0])+(tile.mHeight*dz[1]));
+		RenderUtils.rotateFromFacing(tile.facing);
 		
 		GL11.glDisable(GL11.GL_TEXTURE_2D);
 		RenderUtils.disableLighting();

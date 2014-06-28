@@ -14,13 +14,22 @@ public class TileEntityExternalMonitor extends TileEntityMonitor {
 	public int mWidth = 1, mHeight = 1;
 	public int mX, mY;
 	public static final int MAX_WIDTH = 8;
-	public static final int MAX_HEIGHT = 6;
+	public static final int MAX_HEIGHT = 8;
 	public int tiltest = 5;
 	public boolean canConnect = true;
 	public boolean putInRenderList = false;
 	
 	@SideOnly(Side.CLIENT)
 	public GXFramebuffer fb;
+	
+	public int[][][] facingToOrient = {
+		{{1,0},{0,0},{0,1}}, //DOWN
+		{{1,0},{0,0},{0,1}}, //UP
+		{{1,0},{0,1},{0,0}}, //NORTH
+		{{1,0},{0,1},{0,0}}, //SOUTH
+		{{0,1},{1,0},{0,0}}, //WEST
+		{{0,1},{1,0},{0,0}}  //EAST
+	};
 	
 	public TileEntityExternalMonitor()
 	{
@@ -32,17 +41,20 @@ public class TileEntityExternalMonitor extends TileEntityMonitor {
 	
 	public int getXFromOrient(int x, int y)
 	{
-		return xCoord+x;
+		int[] d = facingToOrient[facing.ordinal()][0];
+		return xCoord+(x*d[0])+(y*d[1]);
 	}
 	
 	public int getYFromOrient(int x, int y)
 	{
-		return yCoord+y;
+		int[] d = facingToOrient[facing.ordinal()][1];
+		return yCoord+(x*d[0])+(y*d[1]);
 	}
 	
 	public int getZFromOrient(int x, int y)
 	{
-		return zCoord;
+		int[] d = facingToOrient[facing.ordinal()][2];
+		return zCoord+(x*d[0])+(y*d[1]);
 	}
 	
 	public boolean canConnectToTile(int x, int y, int z)
@@ -50,7 +62,7 @@ public class TileEntityExternalMonitor extends TileEntityMonitor {
 		if (worldObj.getBlock(x, y, z) != getBlockType())
 			return false;
 		TileEntityExternalMonitor tile = (TileEntityExternalMonitor) worldObj.getTileEntity(x, y, z);
-		return tile.canConnect && (tile.mWidth == mWidth || tile.mHeight == mHeight);
+		return tile.canConnect && (tile.mWidth == mWidth || tile.mHeight == mHeight) && tile.facing == facing;
 	}
 	
 	public void updateVolume()
@@ -67,6 +79,12 @@ public class TileEntityExternalMonitor extends TileEntityMonitor {
 				rtile.mY = y;
 				rtile.mWidth = mWidth;
 				rtile.mHeight = mHeight;
+				rtile.width = width;
+				rtile.height = height;
+				if (rtile.owner != owner && rtile.owner != null)
+				{
+					rtile.owner.monitor = null;
+				}
 				rtile.owner = owner;
 			}
 		}

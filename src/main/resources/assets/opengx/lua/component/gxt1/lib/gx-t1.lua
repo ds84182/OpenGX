@@ -94,10 +94,17 @@ function gx.isAvailable(bytes)
 	return component.gxt1.getFifoUsage()+bytes < component.gxt1.getFifoSize()
 end
 
+function gx.ensureFits(bytes)
+	if not gx.isAvailable(bytes) then
+		print("WARN: Not enough room! Uploaded remaining "..component.gxt1.getFifoUsage().." bytes")
+		component.gxt1.upload()
+	end
+end
+
 function gx.setTextureSlot(slot,tex)
 	checkArg(1, slot, "number")
 	checkArg(2, tex, "number")
-	if not gx.isAvailable(3) then component.gxt1.upload() end
+	gx.ensureFits(3)
 	component.gxt1.writeByte(GX_SET_TEXTURE_SLOT, slot, tex)
 end
 
@@ -105,7 +112,7 @@ function gx.setTextureSlotVariable(slot,idx,val)
 	checkArg(1, slot, "number")
 	checkArg(2, idx, "number")
 	checkArg(3, val, "number")
-	if not gx.isAvailable(4) then component.gxt1.upload() end
+	gx.ensureFits(4)
 	component.gxt1.writeByte(GX_SET_TEXSLOT_VAR, slot, idx, val)
 end
 
@@ -121,7 +128,7 @@ function gx.loadTexture(id,file,fmt)
 		t = fh:read(2048)
 	end
 	fh:close()
-	component.gxt1.uploadTexture(0,data,0)
+	component.gxt1.uploadTexture(id,data,fmt)
 end
 
 function gx.uploadTexture(id,data,fmt)
@@ -182,13 +189,13 @@ function gx.setMapVariable(id,idx,a,b,c,d,e,f,g)
 	local gxt1 = component.gxt1
 	if idx == GX_MAP_VAR_X or idx == GX_MAP_VAR_Y then
 		checkArg(3, a, "number")
-		if not gx.isAvailable(5) then gxt1.upload() end
+		gx.ensureFits(5)
 		gxt1.writeByte(GX_SET_MAP_VAR,id,idx)
 		gxt1.writeShort(a)
 	elseif idx == GX_MAP_VAR_XY then
 		checkArg(3, a, "number")
 		checkArg(4, b, "number")
-		if not gx.isAvailable(9) then gxt1.upload() end
+		gx.ensureFits(9)
 		gxt1.writeByte(GX_SET_MAP_VAR,id,idx)
 		gxt1.writeShort(a,b)
 	elseif idx == GX_MAP_VAR_COLOR then
@@ -197,7 +204,7 @@ function gx.setMapVariable(id,idx,a,b,c,d,e,f,g)
 		checkArg(5, c, "number")
 		checkArg(6, d, "number", "nil")
 		d = d or 255
-		if not gx.isAvailable(7) then gxt1.upload() end
+		gx.ensureFits(7)
 		gxt1.writeByte(GX_SET_MAP_VAR,id,idx)
 		gxt1.writeByte(d,a,b,c)
 	end
@@ -205,7 +212,7 @@ end
 
 function gx.clearMap(id)
 	checkArg(1, id, "number")
-	if not gx.isAvailable(2) then component.gxt1.upload() end
+	gx.ensureFits(2)
 	component.gxt1.writeByte(GX_CLEAR_MAP,id)
 end
 
@@ -229,7 +236,7 @@ function gx.endPlot()
 	local gxt1 = component.gxt1
 	--do it just like uploadMap :D
 	local function process()
-		if not gx.isAvailable(8) then gxt1.upload() end
+		gx.ensureFits(8)
 		if gx.isAvailable(3+(#gx.plots*5)) then
 			gxt1.writeByte(GX_PLOT_MAP,gx.plots.mapid)
 			gxt1.writeShort(#gx.plots)
@@ -241,6 +248,7 @@ function gx.endPlot()
 			return false
 		else
 			--stagger upload
+			print("Stagger uploading map...")
 			local avail = gxt1.getFifoSize()-gxt1.getFifoUsage()
 			local canUpload = math.floor((avail-3)/5)
 			gxt1.writeByte(GX_PLOT_MAP,gx.plots.mapid)
@@ -268,7 +276,7 @@ function gx.findReplaceMap(id,...)
 		checkArg(i+1, fr[i], "number", "string")
 		checkArg(i+2, fr[i+1], "number", "string")
 	end
-	if not gx.isAvailable(4+#fr) then component.gxt1.upload() end
+	gx.ensureFits(4+#fr)
 	local gxt1 = component.gxt1
 	gxt1.writeByte(GX_FIND_REPLACE_MAP,id)
 	gxt1.writeShort(#fr/2)
@@ -294,7 +302,7 @@ GX_SPRITE_VAR_TEX = 12;
 ]]
 function gx.addSprite(id)
 	checkArg(1, id, "number")
-	if not gx.isAvailable(2) then component.gxt1.upload() end
+	gx.ensureFits(2)
 	component.gxt1.writeByte(GX_ADD_SPRITE, id-1)
 end
 
@@ -302,7 +310,7 @@ function gx.setSpriteVariable(id,idx,a,b,c,d,e,f)
 	checkArg(1, id, "number")
 	checkArg(2, idx, "number")
 	local gxt1 = component.gxt1
-	if not gx.isAvailable(19) then gxt1.upload() end
+	gx.ensureFits(19)
 	if idx == GX_SPRITE_VAR_X or idx == GX_SPRITE_VAR_Y then
 		checkArg(3, a, "number")
 		gxt1.writeByte(GX_SET_SPRITE_VAR,id-1,idx)
@@ -354,7 +362,7 @@ end
 
 function gx.removeSprite(id)
 	checkArg(1, id, "number")
-	if not gx.isAvailable(2) then component.gxt1.upload() end
+	gx.ensureFits(2)
 	component.gxt1.writeByte(GX_REMOVE_SPRITE, id-1)
 end
 

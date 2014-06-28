@@ -26,7 +26,7 @@ public class RenderToFramebufferOverlay {
 			else
 			{
 				TileEntityExternalMonitor ex = (TileEntityExternalMonitor) w.get();
-				if (ex.fb != null || ex.owner != null)
+				if (ex.fb != null && ex.owner != null)
 				{
 					ex.fb.bind();
 					ex.owner.gx.render(ex.width, ex.height);

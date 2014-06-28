@@ -2,6 +2,7 @@ package ds.mods.opengx.tileentity;
 
 import java.io.ByteArrayInputStream;
 import java.util.Arrays;
+import java.util.Iterator;
 
 import li.cil.oc.api.FileSystem;
 import li.cil.oc.api.Network;
@@ -152,6 +153,14 @@ public class TileEntityGX extends TileEntityEnvironment {
 							{
 								monitor = closestMonitor;
 								monitor.setOwner(this);
+								for (Node noe : node().reachableNodes())
+								{
+									if (noe.host() instanceof Context)
+									{
+										System.out.println("CTX");
+										noe.connect(monitor.node());
+									}
+								}
 							}
 							currentDiscovery = null;
 						}
@@ -166,6 +175,14 @@ public class TileEntityGX extends TileEntityEnvironment {
 						{
 							monitor = (TileEntityMonitor) n.host();
 							monitor.setOwner(this);
+							for (Node noe : node().reachableNodes())
+							{
+								if (noe.host() instanceof Context)
+								{
+									System.out.println("CTX");
+									noe.connect(monitor.node());
+								}
+							}
 							break;
 						}
 					}
@@ -292,7 +309,7 @@ public class TileEntityGX extends TileEntityEnvironment {
 		OpenGX.network.sendToAllAround(msg, new TargetPoint(worldObj.provider.dimensionId, this.xCoord, this.yCoord, this.zCoord, 64));
 		gx.uploadTexture(id, new ByteArrayInputStream(data), fmt);
 		//technically, the fifo would have to be copied into memory in order for a texture to upload
-		context.pause((((double)(data.length+fifoBytes))/((double)fifoSize))*(1/20D));
+		context.pause((data.length/1024D)*(1/5D));
 		
 		return null;
 	}
@@ -364,15 +381,48 @@ public class TileEntityGX extends TileEntityEnvironment {
 		if (node.host() instanceof Context)
 		{
 			node.disconnect(romGX.node());
+			if (monitor != null) node.disconnect(monitor.node());
 		}
 		else if (monitor != null && monitor.node().address().equals(node.address()))
 		{
 			monitor = null;
+			for (Node n : node().reachableNodes())
+			{
+				if (n.host() instanceof Context)
+				{
+					n.disconnect(node);
+				}
+			}
+		}
+		else if (node == node())
+		{
+			for (Node n : romGX.node().reachableNodes())
+			{
+				if (n.host() instanceof Context)
+				{
+					n.disconnect(romGX.node());
+				}
+			}
 		}
 	}
 
 	@Override
 	public void onMessage(Message message) {
 		
+	}
+
+	@Override
+	public void invalidate() {
+		if (monitor != null)
+		{
+			for (Node n : node().reachableNodes())
+			{
+				if (n.host() instanceof Context)
+				{
+					n.disconnect(monitor.node());
+				}
+			}
+		}
+		super.invalidate();
 	}
 }

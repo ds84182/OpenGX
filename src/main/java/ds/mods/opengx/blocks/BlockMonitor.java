@@ -1,9 +1,12 @@
 package ds.mods.opengx.blocks;
 
 import net.minecraft.block.Block;
+import net.minecraft.block.BlockPistonBase;
 import net.minecraft.block.material.Material;
 import net.minecraft.client.renderer.texture.IIconRegister;
+import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.IIcon;
 import net.minecraft.world.IBlockAccess;
@@ -39,6 +42,14 @@ public class BlockMonitor extends Block {
 			return false;
 		player.openGui(OpenGX.instance, 0, world, x, y, z);
 		return true;
+	}
+
+	@Override
+	public void onBlockPlacedBy(World world, int x,
+			int y, int z, EntityLivingBase entity,
+			ItemStack item) {
+		TileEntityMonitor mon = (TileEntityMonitor) world.getTileEntity(x, y, z);
+		mon.facing = ForgeDirection.VALID_DIRECTIONS[BlockPistonBase.determineOrientation(world, x, y, z, entity)];
 	}
 
 	@Override

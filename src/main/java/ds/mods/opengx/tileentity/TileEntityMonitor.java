@@ -10,8 +10,10 @@ import li.cil.oc.api.network.Visibility;
 import li.cil.oc.api.prefab.TileEntityEnvironment;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.network.NetworkManager;
 import net.minecraft.network.Packet;
 import net.minecraft.network.play.server.S35PacketUpdateTileEntity;
+import net.minecraftforge.common.util.ForgeDirection;
 import cpw.mods.fml.common.network.NetworkRegistry.TargetPoint;
 import ds.mods.opengx.OpenGX;
 import ds.mods.opengx.network.MonitorOwnMessage;
@@ -24,6 +26,8 @@ public class TileEntityMonitor extends TileEntityEnvironment {
 	public int height = 96;
 	
 	public int countdown = 100;
+	
+	public ForgeDirection facing = ForgeDirection.NORTH;
 	
 	public TileEntityMonitor()
 	{
@@ -73,6 +77,7 @@ public class TileEntityMonitor extends TileEntityEnvironment {
 		super.readFromNBT(nbt);
 		width = nbt.getInteger("width");
 		height = nbt.getInteger("height");
+		facing = ForgeDirection.VALID_DIRECTIONS[nbt.getByte("facing")];
 	}
 
 	@Override
@@ -80,6 +85,7 @@ public class TileEntityMonitor extends TileEntityEnvironment {
 		super.writeToNBT(nbt);
 		nbt.setInteger("width", width);
 		nbt.setInteger("height", height);
+		nbt.setByte("facing", (byte) facing.ordinal());
 	}
 
 	public Packet getDescriptionPacket()
@@ -124,13 +130,23 @@ public class TileEntityMonitor extends TileEntityEnvironment {
 	@Callback(direct=true,limit=1)
 	public Object[] setSize(Context context, Arguments arguments)
 	{
-		width = arguments.checkInteger(0);
-		height = arguments.checkInteger(1);
-		return null;
+		int w = arguments.checkInteger(0), h = arguments.checkInteger(1);
+		if (w<1 || h<1 || w>512 || h>512)
+			return new Object[]{false, "Size out of bounds (<0 or >512)"};
+		width = w;
+		height = h;
+		onChanged();
+		return new Object[]{true};
 	}
 
 	public void onChanged() {
 		
+	}
+
+	@Override
+	public void onDataPacket(NetworkManager net, S35PacketUpdateTileEntity pkt) {
+		if (worldObj.isRemote)
+			readFromNBT(pkt.func_148857_g());
 	}
 
 }
