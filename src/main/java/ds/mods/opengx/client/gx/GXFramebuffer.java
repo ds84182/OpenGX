@@ -10,6 +10,8 @@ import net.minecraft.client.renderer.texture.TextureUtil;
 import org.lwjgl.opengl.EXTFramebufferObject;
 import org.lwjgl.opengl.GL11;
 
+import ds.mods.opengx.client.RenderUtils;
+
 public class GXFramebuffer {
 	public final int fbo;
 	public final int tex;
@@ -50,6 +52,9 @@ public class GXFramebuffer {
 		GL11.glMatrixMode(GL11.GL_MODELVIEW);
 		GL11.glPushMatrix();
 		GL11.glLoadIdentity();
+		
+		bindTexture();
+		RenderUtils.texturedRectangle(0, 0, width, height, 0F, 1F, 1F, 0F); //render ourself onto fb
 	}
 	
 	public void unbind()

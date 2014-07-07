@@ -38,7 +38,8 @@ public class GXTexture extends AbstractTexture {
         TextureUtil.allocateTexture(this.getGlTextureId(), par1, par2);
     }
 
-    public void loadTexture(IResourceManager par1ResourceManager) throws IOException {}
+    @Override
+    public void loadTexture(IResourceManager par1ResourceManager){}
 
     public void updateDynamicTexture()
     {
