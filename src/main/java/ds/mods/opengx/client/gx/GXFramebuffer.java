@@ -55,6 +55,7 @@ public class GXFramebuffer {
 		
 		bindTexture();
 		RenderUtils.texturedRectangle(0, 0, width, height, 0F, 1F, 1F, 0F); //render ourself onto fb
+		unbindTexture();
 	}
 	
 	public void unbind()
