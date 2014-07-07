@@ -28,13 +28,13 @@ public class DebugOverlay {
 				return;
 			}
 			overlayFramebuffer.bind();
-	        gx.render((int)(128), (int)(128));
-	        overlayFramebuffer.unbind();
-	        GL11.glEnable(GL11.GL_TEXTURE_2D);
-	        overlayFramebuffer.bindTexture();
-	        RenderUtils.setColor(255, 255, 255);
-	        RenderUtils.texturedRectangle(0, 0, 128, 128, 0F, 1F, 1F, 0F);
-	        overlayFramebuffer.unbindTexture();
+			gx.render((int)(128), (int)(128));
+			overlayFramebuffer.unbind();
+			GL11.glEnable(GL11.GL_TEXTURE_2D);
+			overlayFramebuffer.bindTexture();
+			RenderUtils.setColor(255, 255, 255);
+			RenderUtils.texturedRectangle(0, 0, 128, 128, 0F, 1F, 1F, 0F);
+			overlayFramebuffer.unbindTexture();
 		}
 	}
 
