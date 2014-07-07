@@ -97,9 +97,9 @@ public class TileEntityMonitor extends TileEntityEnvironment {
 	}
 	
 	public boolean isUseableByPlayer(EntityPlayer entityplayer) {
-        return owner != null && 
-        		worldObj.getTileEntity(xCoord, yCoord, zCoord) == this &&
-        		entityplayer.getDistanceSq(xCoord + 0.5, yCoord + 0.5, zCoord + 0.5) < 64;
+		return owner != null && 
+				worldObj.getTileEntity(xCoord, yCoord, zCoord) == this &&
+				entityplayer.getDistanceSq(xCoord + 0.5, yCoord + 0.5, zCoord + 0.5) < 64;
 	}
 	
 	public void setOwner(TileEntityGX o)

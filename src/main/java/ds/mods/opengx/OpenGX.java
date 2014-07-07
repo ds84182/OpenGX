@@ -35,10 +35,10 @@ public class OpenGX {
 	public static final String VERSION = "indev";
 	
 	@Instance(value = MODID)
-    public static OpenGX instance;
+	public static OpenGX instance;
 	
 	@SidedProxy(clientSide="ds.mods.opengx.client.ClientProxy", serverSide="ds.mods.opengx.CommonProxy")
-    public static CommonProxy proxy;
+	public static CommonProxy proxy;
 	
 	public static SimpleNetworkWrapper network;
 	
@@ -55,8 +55,8 @@ public class OpenGX {
 	};
 	
 	@EventHandler
-    public void preinit(FMLPreInitializationEvent event)
-    {
+	public void preinit(FMLPreInitializationEvent event)
+	{
 		bGX = new BlockGX(Material.iron);
 		GameRegistry.registerBlock(bGX, "GX");
 		GameRegistry.registerTileEntity(TileEntityGX.class, "GX");
@@ -68,11 +68,11 @@ public class OpenGX {
 		bExMonitor = new BlockExternalMonitor(Material.iron);
 		GameRegistry.registerBlock(bExMonitor, "ExMonitor");
 		GameRegistry.registerTileEntity(TileEntityExternalMonitor.class, "ExMonitor");
-    }
+	}
 	
 	@EventHandler
-    public void init(FMLInitializationEvent event)
-    {
+	public void init(FMLInitializationEvent event)
+	{
 		network = new SimpleNetworkWrapper("OpenGX");
 		network.registerMessage(GXFifoUploadMessageHandler.class, GXFifoUploadMessage.class, 0, Side.CLIENT);
 		network.registerMessage(GXTextureUploadMessageHandler.class, GXTextureUploadMessage.class, 1, Side.CLIENT);
@@ -83,5 +83,5 @@ public class OpenGX {
 		MinecraftForge.EVENT_BUS.register(new Events());
 		
 		proxy.registerRenderers();
-    }
+	}
 }

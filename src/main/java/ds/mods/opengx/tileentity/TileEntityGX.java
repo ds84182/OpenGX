@@ -73,28 +73,28 @@ public class TileEntityGX extends TileEntityEnvironment {
 	}
 	
 	@Override
-    public void readFromNBT(final NBTTagCompound nbt) {
+	public void readFromNBT(final NBTTagCompound nbt) {
 		tier = nbt.getInteger("tier")+1;
 		monitorAddress = nbt.getString("monitor");
 		if (monitorAddress.length() == 0)
 			monitorAddress = null;
 		init();
-        super.readFromNBT(nbt);
-        if (romGX != null) {
-        	romGX.load(nbt.getCompoundTag("oc:romnode"));
-        }
-        
-        NBTTagList stateReloadPackets = nbt.getTagList("state", 10);
-        if (stateReloadPackets != null)
-        {
-        	for (int i=0; i<stateReloadPackets.tagCount(); i++)
-        	{
-        		NBTTagCompound pkt = stateReloadPackets.getCompoundTagAt(i);
-        		IGX.DataType type = IGX.DataType.values()[pkt.getInteger("type")];
-        		byte[] data = nbt.getByteArray("data");
-        		ByteArrayDataInput dat = ByteStreams.newDataInput(data);
-        		switch (type)
-        		{
+		super.readFromNBT(nbt);
+		if (romGX != null) {
+			romGX.load(nbt.getCompoundTag("oc:romnode"));
+		}
+		
+		NBTTagList stateReloadPackets = nbt.getTagList("state", 10);
+		if (stateReloadPackets != null)
+		{
+			for (int i=0; i<stateReloadPackets.tagCount(); i++)
+			{
+				NBTTagCompound pkt = stateReloadPackets.getCompoundTagAt(i);
+				IGX.DataType type = IGX.DataType.values()[pkt.getInteger("type")];
+				byte[] data = nbt.getByteArray("data");
+				ByteArrayDataInput dat = ByteStreams.newDataInput(data);
+				switch (type)
+				{
 				case FIFO:
 					gx.uploadFIFO(dat,data);
 					break;
@@ -106,33 +106,33 @@ public class TileEntityGX extends TileEntityEnvironment {
 					dat.readFully(texdata);
 					gx.uploadTexture((short) id, new ByteArrayInputStream(texdata), (byte) fmt);
 					break;
-        		}
-        	}
-        }
-    }
+				}
+			}
+		}
+	}
 
-    @Override
-    public void writeToNBT(final NBTTagCompound nbt) {
-        super.writeToNBT(nbt);
-        nbt.setInteger("tier", tier-1);
-        if (monitorAddress != null)
-        	nbt.setString("monitor",monitorAddress);
-        if (romGX != null) {
-            final NBTTagCompound nodeNbt = new NBTTagCompound();
-            romGX.save(nodeNbt);
-            nbt.setTag("oc:romnode",nodeNbt);
-        }
-        //ArrayList<Pair<DataType, byte[]>> pkts = gx.createMegaUpdate();
-    }
-    
-    private double distance(TileEntity te)
-    {
-    	double dx = xCoord+te.xCoord;
-    	double dy = yCoord+te.yCoord;
-    	double dz = zCoord+te.zCoord;
-    	
-    	return Math.sqrt(dx*dx + dy*dy + dz*dz);
-    }
+	@Override
+	public void writeToNBT(final NBTTagCompound nbt) {
+		super.writeToNBT(nbt);
+		nbt.setInteger("tier", tier-1);
+		if (monitorAddress != null)
+			nbt.setString("monitor",monitorAddress);
+		if (romGX != null) {
+			final NBTTagCompound nodeNbt = new NBTTagCompound();
+			romGX.save(nodeNbt);
+			nbt.setTag("oc:romnode",nodeNbt);
+		}
+		//ArrayList<Pair<DataType, byte[]>> pkts = gx.createMegaUpdate();
+	}
+	
+	private double distance(TileEntity te)
+	{
+		double dx = xCoord+te.xCoord;
+		double dy = yCoord+te.yCoord;
+		double dz = zCoord+te.zCoord;
+		
+		return Math.sqrt(dx*dx + dy*dy + dz*dz);
+	}
 	
 	@Override
 	public void updateEntity()
