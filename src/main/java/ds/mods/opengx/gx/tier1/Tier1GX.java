@@ -27,6 +27,9 @@ public class Tier1GX implements IGX {
 	public static final int GX_ADD_SPRITE = 8;
 	public static final int GX_SET_SPRITE_VAR = 9;
 	public static final int GX_REMOVE_SPRITE = 10;
+	
+	public static final int GX_DISABLE_CLEAR = 11;
+	public static final int GX_SET_CLEAR_COLOR = 12;
 
 	public static final int GX_TEXSLOT_VAR_TILESIZE = 0;
 	
@@ -99,6 +102,9 @@ public class Tier1GX implements IGX {
 	public static final int GX_GET_MAP_TILE = 2;
 	public static final int GX_GET_MAP_VAR = 3;
 	public static final int GX_GET_SPRITE_VAR = 4;
+	
+	public boolean clear = true;
+	public float cR, cG, cB;
 
 	@Override
 	public void uploadFIFO(ByteArrayDataInput fifo, byte[] fifoData) {
@@ -398,6 +404,17 @@ public class Tier1GX implements IGX {
 				}
 				sprites[spriteid] = null;
 			}
+			else if (b == GX_DISABLE_CLEAR)
+			{
+				clear = false;
+			}
+			else if (b == GX_SET_CLEAR_COLOR)
+			{
+				clear = true;
+				cR = fifo.readFloat();
+				cG = fifo.readFloat();
+				cB = fifo.readFloat();
+			}
 			else
 			{
 				error = GX_ERROR_UNKNOWN_COMMAND;
@@ -429,6 +446,10 @@ public class Tier1GX implements IGX {
 		{
 			sprites[i] = null;
 		}
+		clear = true;
+		cR = 0.0F;
+		cG = 0.0F;
+		cB = 0.0F;
 	}
 
 	@Override

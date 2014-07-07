@@ -26,6 +26,8 @@ return function(gxdev)
 		GX_ADD_POLYGON = 1;
 		GX_ADD_POLYGONS = 2;
 		GX_CLEAR_POLYGONS = 3;
+		GX_DISABLE_CLEAR = 4;
+		GX_SET_CLEAR_COLOR = 5;
 
 		--command argument constants--
 		GX_FMT_BASE85 = 0
@@ -185,7 +187,19 @@ return function(gxdev)
 		if #args > 16 then error("Too many points for polygon") end
 		if #args < 3 then error("Need at least 3 points for polygon") end
 		gx.ensureFits(3+(#args*16))
-		gxdev.writeByte(GX_ADD_POLYGON,-1,#args)
+		gxdev.writeByte(GX_ADD_POLYGON,-1,255,255,255,255,#args)
+		for i, v in ipairs(args) do
+			local x,y = gx.applyTransform(v)
+			gxdev.writeFloat(x,y,0,0)
+		end
+	end
+	
+	function gx.addColoredPolygon(r,g,b,a,...)
+		local args = {...}
+		if #args > 16 then error("Too many points for polygon") end
+		if #args < 3 then error("Need at least 3 points for polygon") end
+		gx.ensureFits(3+(#args*16))
+		gxdev.writeByte(GX_ADD_POLYGON,-1,a,r,g,b,#args)
 		for i, v in ipairs(args) do
 			local x,y = gx.applyTransform(v)
 			gxdev.writeFloat(x,y,0,0)
@@ -197,7 +211,19 @@ return function(gxdev)
 		if #args > 16 then error("Too many points for polygon") end
 		if #args < 3 then error("Need at least 3 points for polygon") end
 		gx.ensureFits(3+(#args*16))
-		gxdev.writeByte(GX_ADD_POLYGON,tex,#args)
+		gxdev.writeByte(GX_ADD_POLYGON,tex,255,255,255,255,#args)
+		for i, v in ipairs(args) do
+			local x,y = gx.applyTransform(v)
+			gxdev.writeFloat(x,y,v[3] or 0, v[4] or 0)
+		end
+	end
+	
+	function gx.addColoredTexturedPolygon(tex,r,g,b,a,...)
+		local args = {...}
+		if #args > 16 then error("Too many points for polygon") end
+		if #args < 3 then error("Need at least 3 points for polygon") end
+		gx.ensureFits(3+(#args*16))
+		gxdev.writeByte(GX_ADD_POLYGON,tex,a,r,g,b,#args)
 		for i, v in ipairs(args) do
 			local x,y = gx.applyTransform(v)
 			gxdev.writeFloat(x,y,v[3] or 0, v[4] or 0)
@@ -264,6 +290,15 @@ return function(gxdev)
 		local maddr = gxdev.getMonitorAddress()
 		if not maddr then return nil end
 		return component.proxy(maddr)
+	end
+	
+	function gx.disableClear()
+		gxdev.writeByte(GX_DISABLE_CLEAR)
+	end
+	
+	function gx.setClearColor(r,g,b)
+		gxdev.writeByte(GX_SET_CLEAR_COLOR)
+		gxdev.writeFloat(r/255,g/255,b/255)
 	end
 
 	function gx.render()

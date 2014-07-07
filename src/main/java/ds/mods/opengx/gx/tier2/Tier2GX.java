@@ -19,24 +19,19 @@ public class Tier2GX implements IGX {
 	public static final int GX_ADD_POLYGON = 1;
 	public static final int GX_ADD_POLYGONS = 2;
 	public static final int GX_CLEAR_POLYGONS = 3;
-	//metacommand to tell the GX to reenter current Gen
+	public static final int GX_DISABLE_CLEAR = 4;
+	public static final int GX_SET_CLEAR_COLOR = 5;
 	
 	public int error = 0;
 	public static final int GX_ERROR_NONE = 0;
 	
 	public static final String errorUnknown = "An unknown error has occured";
 	public static final String[] errorDescriptions = {
-		"Texture ID out of range",
-		"Texture Slot ID out of range",
-		"Texture Slot not initialized",
-		"Unknown Texture Slot Variable",
-		"Unknown Command",
-		"Map ID out of range",
-		"Map not initialized",
-		"Sprite ID out of range",
-		"Sprite not initialized"
 	};
 	public String additionalInfo;
+	
+	public boolean clear = true;
+	public float cR, cG, cB;
 	
 	private void addPolygon(ByteArrayDataInput fifo)
 	{
@@ -81,6 +76,17 @@ public class Tier2GX implements IGX {
 			{
 				nrpolygons = 0;
 			}
+			else if (b == GX_DISABLE_CLEAR)
+			{
+				clear = false;
+			}
+			else if (b == GX_SET_CLEAR_COLOR)
+			{
+				clear = true;
+				cR = fifo.readFloat();
+				cG = fifo.readFloat();
+				cB = fifo.readFloat();
+			}
 		}
 	}
 
@@ -91,6 +97,10 @@ public class Tier2GX implements IGX {
 			serverTextures[i] = null;
 		}
 		nrpolygons = 0;
+		clear = true;
+		cR = 0.0F;
+		cG = 0.0F;
+		cB = 0.0F;
 	}
 	
 	@Override

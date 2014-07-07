@@ -352,7 +352,7 @@ public class TileEntityGX extends TileEntityEnvironment {
 		OpenGX.network.sendToAllAround(msg, new TargetPoint(worldObj.provider.dimensionId, this.xCoord, this.yCoord, this.zCoord, 64));
 		gx.uploadTexture(id, new ByteArrayInputStream(data), fmt);
 		//technically, the fifo would have to be copied into memory in order for a texture to upload
-		context.pause((data.length/1024D)*(1/5D));
+		//context.pause((data.length/1024D)*(1/5D));
 		
 		return null;
 	}

@@ -109,6 +109,7 @@ public class ClientTier2GX extends Tier2GX {
 						}
 						else
 						{
+							GL11.glEnable(GL11.GL_TEXTURE_2D);
 							GXTexture t = textures[tex];
 							if (t != null)
 								GL11.glBindTexture(GL11.GL_TEXTURE_2D, t.getGlTextureId());
@@ -116,7 +117,11 @@ public class ClientTier2GX extends Tier2GX {
 						if (polylen >= 3)
 						{
 							tess.startDrawing(GL11.GL_TRIANGLE_FAN);
-							GL11.glColor3f(1F, 1F, 1F);
+							int r = p.color >> 24 & 255;
+							int j = p.color >> 16 & 255;
+					        int k = p.color >> 8 & 255;
+					        int l = p.color & 255;
+							GL11.glColor4f(j/255F, k/255F, l/255F, 1.0F);
 							for (int v=0; v<polylen; v++)
 							{
 								tess.addVertexWithUV(p.x[v], p.y[v], 0, p.u[v], p.v[v]);
@@ -127,6 +132,11 @@ public class ClientTier2GX extends Tier2GX {
 				}
 				GL11.glEnable(GL11.GL_TEXTURE_2D);
 				GL11.glEndList();
+			}
+			if (clear)
+			{
+				GL11.glClearColor(cR, cG, cB, 1.0f);
+				GL11.glClear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT); // Clear Screen And Depth Buffer on the fbo to red
 			}
 			GL11.glCallList(displayList);
 		}

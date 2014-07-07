@@ -48,6 +48,9 @@ return function(gxdev)
 		GX_ADD_SPRITE = 8;
 		GX_SET_SPRITE_VAR = 9;
 		GX_REMOVE_SPRITE = 10;
+		
+		GX_DISABLE_CLEAR = 11;
+		GX_SET_CLEAR_COLOR = 12;
 
 		--command argument constants--
 		GX_FMT_BASE85 = 0
@@ -365,6 +368,15 @@ return function(gxdev)
 		local maddr = gxdev.getMonitorAddress()
 		if not maddr then return nil end
 		return component.proxy(maddr)
+	end
+	
+	function gx.disableClear()
+		gxdev.writeByte(GX_DISABLE_CLEAR)
+	end
+	
+	function gx.setClearColor(r,g,b)
+		gxdev.writeByte(GX_SET_CLEAR_COLOR)
+		gxdev.writeFloat(r/255,g/255,b/255)
 	end
 
 	function gx.render()

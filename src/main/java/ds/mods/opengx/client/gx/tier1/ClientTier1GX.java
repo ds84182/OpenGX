@@ -53,8 +53,8 @@ public class ClientTier1GX extends Tier1GX {
 		{
 			//display error
 			//fill render with fbwidth and fbheight
-			RenderUtils.setColor(255, 0, 0);
-			RenderUtils.rectangle(0, 0, fbwidth, fbheight);
+			GL11.glClearColor (1.0f, 0.0f, 0.0f, 1.0f);
+			GL11.glClear (GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT); // Clear Screen And Depth Buffer on the fbo to red
 			String textFirst = "Oh no! The GX-T1 runtime has encountered an error and needs to stop.";
 			int th = Minecraft.getMinecraft().fontRenderer.listFormattedStringToWidth(textFirst, fbwidth).size();
 			Minecraft.getMinecraft().fontRenderer.drawSplitString(textFirst, 0, 0, fbwidth, 0xFFFFFFFF);
@@ -68,6 +68,11 @@ public class ClientTier1GX extends Tier1GX {
 		}
 		else
 		{
+			if (clear)
+			{
+				GL11.glClearColor(cR, cG, cB, 1.0f);
+				GL11.glClear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT); // Clear Screen And Depth Buffer on the fbo to red
+			}
 			renderMap(fbwidth,fbheight,0);
 			renderMap(fbwidth,fbheight,1);
 			renderSprites();

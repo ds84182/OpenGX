@@ -4,6 +4,7 @@ import com.google.common.io.ByteArrayDataInput;
 
 public class GXPolygon {
 	public float[] x, y, u, v;
+	public int color;
 	public byte tex = -1;
 	
 	public GXPolygon(ByteArrayDataInput fifo)
@@ -13,6 +14,7 @@ public class GXPolygon {
 
 	public void update(ByteArrayDataInput fifo) {
 		tex = fifo.readByte();
+		color = fifo.readInt();
 		int len = Math.min(16, fifo.readByte());
 		x = new float[len];
 		y = new float[len];
