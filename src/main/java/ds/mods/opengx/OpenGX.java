@@ -32,7 +32,7 @@ import ds.mods.opengx.tileentity.TileEntityMonitor;
 @Mod(modid = OpenGX.MODID, version = OpenGX.VERSION, dependencies = "after:OpenComputers")
 public class OpenGX {
 	public static final String MODID = "OpenGX";
-	public static final String VERSION = "indev";
+	public static final String VERSION = "@VERSION@.@BUILD@";
 	
 	@Instance(value = MODID)
     public static OpenGX instance;
