@@ -1,8 +1,8 @@
 package ds.mods.opengx.tileentity;
 
 import java.io.ByteArrayInputStream;
+import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Iterator;
 
 import li.cil.oc.api.FileSystem;
 import li.cil.oc.api.Network;
@@ -15,14 +15,22 @@ import li.cil.oc.api.network.Node;
 import li.cil.oc.api.network.Visibility;
 import li.cil.oc.api.prefab.TileEntityEnvironment;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.NBTTagList;
+import net.minecraft.network.NetworkManager;
+import net.minecraft.network.Packet;
+import net.minecraft.network.play.server.S35PacketUpdateTileEntity;
 import net.minecraft.tileentity.TileEntity;
 
+import org.apache.commons.lang3.tuple.Pair;
+
+import com.google.common.io.ByteArrayDataInput;
 import com.google.common.io.ByteArrayDataOutput;
 import com.google.common.io.ByteStreams;
 
 import cpw.mods.fml.common.network.NetworkRegistry.TargetPoint;
 import ds.mods.opengx.OpenGX;
 import ds.mods.opengx.gx.IGX;
+import ds.mods.opengx.gx.IGX.DataType;
 import ds.mods.opengx.network.GXFifoUploadMessage;
 import ds.mods.opengx.network.GXTextureUploadMessage;
 import ds.mods.opengx.util.MonitorDiscovery;
@@ -49,6 +57,7 @@ public class TileEntityGX extends TileEntityEnvironment {
 	public MonitorDiscovery currentDiscovery;
 	public int discoverCountDown = 10;
 	public int monitorAddressFailures = 0;
+	public int metadataUpdateCountdown = 100;
 	
 	public void init()
 	{
@@ -56,11 +65,11 @@ public class TileEntityGX extends TileEntityEnvironment {
 		initd = true;
 		//tier = worldObj.getBlockMetadata(xCoord, yCoord, zCoord)+1;
 		gx = null;
-		fifoSize = tier*4096;
+		fifoSize = (int) Math.pow(2, 10+tier);
 		fifo = ByteStreams.newDataOutput(fifoSize);
 		monitorAddressFailures = 0;
-		node = Network.newNode(this, Visibility.Network).withComponent("gxt"+tier).create();
-		romGX = FileSystem.asManagedEnvironment(FileSystem.fromClass(OpenGX.class, "opengx", "lua/component/"+"gxt"+tier), "gxt"+tier);
+		node = Network.newNode(this, Visibility.Network).withComponent("gx").create();
+		romGX = FileSystem.asManagedEnvironment(FileSystem.fromClass(OpenGX.class, "opengx", "lua/component/gx"), "gx");
 	}
 	
 	@Override
@@ -73,6 +82,32 @@ public class TileEntityGX extends TileEntityEnvironment {
         super.readFromNBT(nbt);
         if (romGX != null) {
         	romGX.load(nbt.getCompoundTag("oc:romnode"));
+        }
+        
+        NBTTagList stateReloadPackets = nbt.getTagList("state", 10);
+        if (stateReloadPackets != null)
+        {
+        	for (int i=0; i<stateReloadPackets.tagCount(); i++)
+        	{
+        		NBTTagCompound pkt = stateReloadPackets.getCompoundTagAt(i);
+        		IGX.DataType type = IGX.DataType.values()[pkt.getInteger("type")];
+        		byte[] data = nbt.getByteArray("data");
+        		ByteArrayDataInput dat = ByteStreams.newDataInput(data);
+        		switch (type)
+        		{
+				case FIFO:
+					gx.uploadFIFO(dat,data);
+					break;
+				case TEXTURE:
+					int id = dat.readShort();
+					int fmt = dat.readByte();
+					int size = dat.readInt();
+					byte[] texdata = new byte[size];
+					dat.readFully(texdata);
+					gx.uploadTexture((short) id, new ByteArrayInputStream(texdata), (byte) fmt);
+					break;
+        		}
+        	}
         }
     }
 
@@ -87,6 +122,7 @@ public class TileEntityGX extends TileEntityEnvironment {
             romGX.save(nodeNbt);
             nbt.setTag("oc:romnode",nodeNbt);
         }
+        //ArrayList<Pair<DataType, byte[]>> pkts = gx.createMegaUpdate();
     }
     
     private double distance(TileEntity te)
@@ -117,6 +153,12 @@ public class TileEntityGX extends TileEntityEnvironment {
 		}
 		super.updateEntity();
 		if (!worldObj.isRemote)
+		{
+			if (metadataUpdateCountdown-- == 0)
+			{
+				metadataUpdateCountdown = 100;
+				worldObj.setBlockMetadataWithNotify(xCoord, yCoord, zCoord, tier-1, 2);
+			}
 			if (monitor == null && node != null)
 			{
 				if (monitorAddress == null)
@@ -198,6 +240,7 @@ public class TileEntityGX extends TileEntityEnvironment {
 			{
 				
 			}
+		}
 	}
 
 	@Callback(direct=true)
@@ -272,7 +315,7 @@ public class TileEntityGX extends TileEntityEnvironment {
 		byte[] data = fifo.toByteArray();
 		try
 		{
-			gx.uploadFIFO(ByteStreams.newDataInput(Arrays.copyOf(data, data.length)));
+			gx.uploadFIFO(ByteStreams.newDataInput(data),data);
 			GXFifoUploadMessage msg = new GXFifoUploadMessage();
 			msg.x = this.xCoord;
 			msg.y = this.yCoord;
@@ -292,7 +335,7 @@ public class TileEntityGX extends TileEntityEnvironment {
 		return null;
 	}
 	
-	@Callback()
+	@Callback(limit=5)
 	public Object[] uploadTexture(Context context, Arguments arguments)
 	{
 		byte id = (byte) arguments.checkInteger(0);
@@ -350,6 +393,12 @@ public class TileEntityGX extends TileEntityEnvironment {
 	public Object[] get(Context context, Arguments arguments)
 	{
 		return new Object[]{gx.getValue(arguments.checkInteger(0), arguments.checkInteger(1), arguments.checkInteger(2), arguments.checkInteger(3))};
+	}
+	
+	@Callback(direct=true)
+	public Object[] getTier(Context context, Arguments arguments)
+	{
+		return new Object[]{tier};
 	}
 	
 	@Callback(direct=true)
@@ -424,5 +473,18 @@ public class TileEntityGX extends TileEntityEnvironment {
 			}
 		}
 		super.invalidate();
+	}
+
+	public Packet getDescriptionPacket()
+	{
+		NBTTagCompound nbttagcompound = new NBTTagCompound();
+		this.writeToNBT(nbttagcompound);
+		return new S35PacketUpdateTileEntity(this.xCoord, this.yCoord, this.zCoord, 3, nbttagcompound);
+	}
+	
+	@Override
+	public void onDataPacket(NetworkManager net, S35PacketUpdateTileEntity pkt) {
+		if (worldObj.isRemote)
+			readFromNBT(pkt.func_148857_g());
 	}
 }

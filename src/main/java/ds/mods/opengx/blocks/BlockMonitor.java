@@ -18,8 +18,9 @@ import ds.mods.opengx.tileentity.TileEntityMonitor;
 public class BlockMonitor extends Block {
 	IIcon off, on, sidei;
 
-	public BlockMonitor(Material p_i45394_1_) {
-		super(p_i45394_1_);
+	public BlockMonitor(Material mat) {
+		super(mat);
+		setCreativeTab(OpenGX.tab);
 	}
 
 	@Override

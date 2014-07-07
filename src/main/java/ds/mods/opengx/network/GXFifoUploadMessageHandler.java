@@ -22,7 +22,7 @@ public class GXFifoUploadMessageHandler implements IMessageHandler<GXFifoUploadM
 			try
 			{
 				TileEntityGX teGX = (TileEntityGX) te;
-				teGX.gx.uploadFIFO(ByteStreams.newDataInput(message.data));
+				teGX.gx.uploadFIFO(ByteStreams.newDataInput(message.data),message.data);
 			}
 			catch (Exception ex)
 			{

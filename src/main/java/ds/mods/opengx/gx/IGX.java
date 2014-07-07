@@ -24,7 +24,7 @@ public interface IGX {
 	 * The implementing GX class reads and processes fifo commands from this
 	 * @param fifo
 	 */
-	public void uploadFIFO(ByteArrayDataInput fifo);
+	public void uploadFIFO(ByteArrayDataInput fifo, byte[] fifoData);
 	/**
 	 * Tells the GX that it has a texture do process
 	 * @param id

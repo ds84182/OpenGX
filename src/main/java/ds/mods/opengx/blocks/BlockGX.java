@@ -1,5 +1,6 @@
 package ds.mods.opengx.blocks;
 
+import ds.mods.opengx.OpenGX;
 import ds.mods.opengx.tileentity.TileEntityGX;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockContainer;
@@ -16,12 +17,15 @@ public class BlockGX extends Block {
 
 	public BlockGX(Material mat) {
 		super(mat);
+		setCreativeTab(OpenGX.tab);
 	}
 
 	@Override
 	public TileEntity createTileEntity(World world, int metadata) {
 		System.out.println("NewTE");
-		return new TileEntityGX();
+		TileEntityGX tile = new TileEntityGX();
+		tile.tier = metadata+1;
+		return tile;
 	}
 
 	@Override

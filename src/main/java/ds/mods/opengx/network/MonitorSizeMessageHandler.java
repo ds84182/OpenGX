@@ -17,7 +17,6 @@ public class MonitorSizeMessageHandler implements IMessageHandler<MonitorSizeMes
 			((TileEntityMonitor) tile).width = message.w;
 			((TileEntityMonitor) tile).height = message.h;
 			((TileEntityMonitor) tile).onChanged();
-			System.out.println("Changed");
 		}
 		return null;
 	}

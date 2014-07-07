@@ -1,6 +1,8 @@
 package ds.mods.opengx;
 
 import net.minecraft.block.material.Material;
+import net.minecraft.creativetab.CreativeTabs;
+import net.minecraft.item.Item;
 import net.minecraftforge.common.MinecraftForge;
 import cpw.mods.fml.common.Mod;
 import cpw.mods.fml.common.Mod.EventHandler;
@@ -43,6 +45,14 @@ public class OpenGX {
 	public static BlockGX bGX;
 	public static BlockMonitor bMonitor;
 	public static BlockExternalMonitor bExMonitor;
+	
+	public static CreativeTabs tab = new CreativeTabs("OpenGX") {
+		
+		@Override
+		public Item getTabIconItem() {
+			return Item.getItemFromBlock(bGX);
+		}
+	};
 	
 	@EventHandler
     public void preinit(FMLPreInitializationEvent event)

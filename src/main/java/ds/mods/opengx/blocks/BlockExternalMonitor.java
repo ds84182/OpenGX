@@ -8,12 +8,14 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.world.World;
 import net.minecraftforge.common.util.ForgeDirection;
+import ds.mods.opengx.OpenGX;
 import ds.mods.opengx.tileentity.TileEntityExternalMonitor;
 
 public class BlockExternalMonitor extends Block {
 
 	public BlockExternalMonitor(Material mat) {
 		super(mat);
+		setCreativeTab(OpenGX.tab);
 	}
 	
 	@Override

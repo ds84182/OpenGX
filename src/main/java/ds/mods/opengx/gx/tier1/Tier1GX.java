@@ -7,6 +7,8 @@ import java.util.ArrayList;
 import org.apache.commons.lang3.tuple.Pair;
 
 import com.google.common.io.ByteArrayDataInput;
+import com.google.common.io.ByteArrayDataOutput;
+import com.google.common.io.ByteStreams;
 
 import ds.mods.opengx.gx.GXServerTexture;
 import ds.mods.opengx.gx.IGX;
@@ -99,7 +101,7 @@ public class Tier1GX implements IGX {
 	public static final int GX_GET_SPRITE_VAR = 4;
 
 	@Override
-	public void uploadFIFO(ByteArrayDataInput fifo) {
+	public void uploadFIFO(ByteArrayDataInput fifo, byte[] fifoData) {
 		byte lastCommand = -1;
 		while (true)
 		{
@@ -176,6 +178,7 @@ public class Tier1GX implements IGX {
 				}
 				if (maps[mapid] == null || maps[mapid].finished)
 				{
+					System.out.println(w+","+h);
 					maps[mapid] = new GXMap(w, h, fifo);
 				}
 				else
@@ -407,22 +410,22 @@ public class Tier1GX implements IGX {
 
 	@Override
 	public void reset() {
-		for (int i=0; i<16; i++)
+		for (int i=0; i<serverTextures.length; i++)
 		{
 			serverTextures[i] = null;
 		}
 		
-		for (int i=0; i<4; i++)
+		for (int i=0; i<textureSlots.length; i++)
 		{
 			textureSlots[i] = null;
 		}
 
-		for (int i=0; i<4; i++)
+		for (int i=0; i<maps.length; i++)
 		{
 			maps[i] = null;
 		}
 		
-		for (int i=0; i<128; i++)
+		for (int i=0; i<sprites.length; i++)
 		{
 			sprites[i] = null;
 		}
@@ -456,7 +459,7 @@ public class Tier1GX implements IGX {
 
 	@Override
 	public String getErrorString() {
-		return -error >= errorDescriptions.length ? errorUnknown : errorDescriptions[-error];
+		return (-error >= errorDescriptions.length ? errorUnknown : errorDescriptions[-error])+(additionalInfo != null ? " : "+additionalInfo : "");
 	}
 
 	@Override
@@ -566,6 +569,132 @@ public class Tier1GX implements IGX {
 		//then we make the MAP packet. It contains all the map data
 		//then we make then SPRITE packet. It contains all sprite data
 		
-		return null;
+		ArrayList<Pair<DataType, byte[]>> packets = new ArrayList<Pair<DataType,byte[]>>();
+		
+		//stage1: INIT and TEXSLOT
+		{
+			ByteArrayDataOutput bado = ByteStreams.newDataOutput();
+			
+			bado.writeByte(GX_INIT);
+			for (int i=0; i<textureSlots.length; i++)
+			{
+				GXTextureSlot texslot = textureSlots[i];
+				if (texslot != null)
+				{
+					bado.writeByte(GX_SET_TEXTURE_SLOT);
+					bado.writeByte(i);
+					bado.writeByte(texslot.texid);
+					
+					bado.writeByte(GX_SET_TEXSLOT_VAR);
+					bado.writeByte(i);
+					bado.writeByte(GX_TEXSLOT_VAR_TILESIZE);
+					bado.writeByte(texslot.tilesize);
+				}
+			}
+			packets.add(Pair.of(DataType.FIFO, bado.toByteArray()));
+		}
+		
+		//stage2: TEXTURES
+		for (int i=0; i<serverTextures.length; i++)
+		{
+			GXServerTexture tex = serverTextures[i];
+			if (tex != null)
+			{
+				ByteArrayDataOutput bado = ByteStreams.newDataOutput();
+				
+				bado.writeShort(i);
+				bado.writeByte(tex.format);
+				bado.writeInt(tex.data.length);
+				bado.write(tex.data);
+				packets.add(Pair.of(DataType.TEXTURE, bado.toByteArray()));
+			}
+		}
+		
+		//stage3: MAP
+		{
+			ByteArrayDataOutput bado = ByteStreams.newDataOutput();
+			
+			for (int i=0; i<maps.length; i++)
+			{
+				GXMap map = maps[i];
+				if (map != null && map.finished)
+				{
+					bado.writeByte(GX_UPLOAD_MAP);
+					bado.writeByte(i);
+					bado.writeShort(map.width);
+					bado.writeShort(map.height);
+					int datasize = map.width*map.height;
+					if (datasize <= Short.MAX_VALUE)
+					{
+						bado.writeShort(map.width*map.height);
+						for (int n=0; n<datasize; n++)
+						{
+							bado.writeByte(map.data[n]);
+						}
+					}
+					else
+					{
+						bado.writeShort(Short.MAX_VALUE);
+						for (int n=0; n<Short.MAX_VALUE; n++)
+						{
+							bado.writeByte(map.data[n]);
+						}
+						int idx = Short.MAX_VALUE;
+						while (idx<datasize)
+						{
+							bado.writeByte(GX_UPLOAD_MAP);
+							bado.writeByte(i);
+							bado.writeShort(map.width);
+							bado.writeShort(map.height);
+							int upld = (idx+Short.MAX_VALUE) < datasize ? Short.MAX_VALUE : (datasize-idx);
+							bado.writeShort(upld);
+							for (int n=idx; n<idx+upld; n++)
+							{
+								bado.writeByte(map.data[n]);
+							}
+							idx+=upld;
+						}
+					}
+				}
+			}
+			packets.add(Pair.of(DataType.FIFO, bado.toByteArray()));
+		}
+		
+		//stage4: SPRITE
+		{
+			ByteArrayDataOutput bado = ByteStreams.newDataOutput();
+			
+			for (int i=0; i<sprites.length; i++)
+			{
+				GXSprite sprite = sprites[i];
+				if (sprite != null)
+				{
+					bado.writeByte(GX_ADD_SPRITE);
+					bado.writeByte(i);
+					
+					bado.writeByte(GX_SET_SPRITE_VAR);
+					bado.writeByte(i);
+					bado.writeByte(GX_SPRITE_VAR_XYIXIYWH);
+					bado.writeFloat(sprite.x);
+					bado.writeFloat(sprite.y);
+					bado.writeShort(sprite.ix);
+					bado.writeShort(sprite.iy);
+					bado.writeShort(sprite.w);
+					bado.writeShort(sprite.h);
+					
+					bado.writeByte(GX_SET_SPRITE_VAR);
+					bado.writeByte(i);
+					bado.writeByte(GX_SPRITE_VAR_COLOR);
+					bado.writeInt(sprite.color);
+					
+					bado.writeByte(GX_SET_SPRITE_VAR);
+					bado.writeByte(i);
+					bado.writeByte(GX_SPRITE_VAR_TEX);
+					bado.writeByte(sprite.tex);
+				}
+			}
+			packets.add(Pair.of(DataType.FIFO, bado.toByteArray()));
+		}
+		return packets;
 	}
 }
