@@ -15,7 +15,7 @@ import ds.mods.opengx.client.RenderUtils;
 public class GXFramebuffer {
 	public final int fbo;
 	public final int tex;
-	public final int width, height;
+	public int width, height;
 
 	public GXFramebuffer(int w, int h)
 	{
@@ -32,6 +32,13 @@ public class GXFramebuffer {
 		
 		EXTFramebufferObject.glBindFramebufferEXT( EXTFramebufferObject.GL_FRAMEBUFFER_EXT, fbo);
 		EXTFramebufferObject.glFramebufferTexture2DEXT( EXTFramebufferObject.GL_FRAMEBUFFER_EXT, EXTFramebufferObject.GL_COLOR_ATTACHMENT0_EXT, GL11.GL_TEXTURE_2D, tex, 0);
+		
+		GL11.glPushAttrib(GL11.GL_VIEWPORT_BIT);
+		GL11.glViewport(0, 0, width, height);
+		GL11.glClearColor(0, 0, 0, 255);
+		GL11.glClear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT);
+		GL11.glPopAttrib();
+		
 		int result = EXTFramebufferObject.glCheckFramebufferStatusEXT(EXTFramebufferObject.GL_FRAMEBUFFER_EXT);
 		if (result!=EXTFramebufferObject.GL_FRAMEBUFFER_COMPLETE_EXT) {
 			EXTFramebufferObject.glBindFramebufferEXT(EXTFramebufferObject.GL_FRAMEBUFFER_EXT, 0);
@@ -78,6 +85,15 @@ public class GXFramebuffer {
 	public void unbindTexture()
 	{
 		GL11.glPopAttrib();
+	}
+	
+	public void resize(int w, int h)
+	{
+		width = w;
+		height = h;
+		GL11.glBindTexture(GL11.GL_TEXTURE_2D, tex);
+		GL11.glTexImage2D(GL11.GL_TEXTURE_2D, 0, GL11.GL_RGBA8, w, h, 0, GL11.GL_RGBA, GL11.GL_INT, (java.nio.ByteBuffer) null);
+		GL11.glBindTexture(GL11.GL_TEXTURE_2D, 0);
 	}
 
 	@Override

@@ -1,14 +1,16 @@
 package ds.mods.opengx.client.gx.tier2;
 
 import java.io.ByteArrayInputStream;
+import java.nio.FloatBuffer;
 import java.util.zip.GZIPInputStream;
+
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.Tessellator;
 
 import org.lwjgl.opengl.GL11;
 
 import com.google.common.io.ByteArrayDataInput;
 
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.Tessellator;
 import ds.mods.opengx.client.RenderUtils;
 import ds.mods.opengx.client.gx.GXTexture;
 import ds.mods.opengx.gx.tier2.GXPolygon;
@@ -117,6 +119,19 @@ public class ClientTier2GX extends Tier2GX {
 								if (t != null)
 									GL11.glBindTexture(GL11.GL_TEXTURE_2D, t.getGlTextureId());
 							}
+							/*int ptyp = 0;
+							if (polylen>=3)
+							{
+								ptyp = GL11.GL_TRIANGLE_FAN;
+							}
+							else if (polylen==2)
+							{
+								ptyp = GL11.GL_LINE;
+							}
+							else if (polylen==1)
+							{
+								ptyp = GL11.GL_POINT;
+							}*/
 							if (polylen >= 3)
 							{
 								tess.startDrawing(GL11.GL_TRIANGLE_FAN);

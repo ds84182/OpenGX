@@ -6,6 +6,10 @@ function text.init(gx)
 	gx.loadTexture(GX_TEXID32, "/lib/gx/font.gxt", GX_FMT_BASE85)
 end
 
+function text.getDimensions(str)
+	return #str*8, 8
+end
+
 function text.renderString(gx,str,x,y,r,g,b,a)
 	x = x or 0
 	y = y or 0

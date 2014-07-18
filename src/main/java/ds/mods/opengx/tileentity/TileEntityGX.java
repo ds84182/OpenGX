@@ -65,7 +65,7 @@ public class TileEntityGX extends TileEntityEnvironment {
 		initd = true;
 		//tier = worldObj.getBlockMetadata(xCoord, yCoord, zCoord)+1;
 		gx = null;
-		fifoSize = (int) Math.pow(2, 10+tier);
+		fifoSize = (int) Math.pow(2, 11+tier);
 		fifo = ByteStreams.newDataOutput(fifoSize);
 		monitorAddressFailures = 0;
 		node = Network.newNode(this, Visibility.Network).withComponent("gx").create();

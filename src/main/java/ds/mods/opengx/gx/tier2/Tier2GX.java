@@ -8,13 +8,15 @@ import org.apache.commons.lang3.tuple.Pair;
 
 import com.google.common.io.ByteArrayDataInput;
 
+import ds.mods.opengx.gx.GXMatrix;
 import ds.mods.opengx.gx.GXServerTexture;
 import ds.mods.opengx.gx.IGX;
 
 public class Tier2GX implements IGX {
 	public GXServerTexture[] serverTextures = new GXServerTexture[64];
-	public GXPolygon[] polygons = new GXPolygon[256]; //supports up to 256 polygons rendering at the same time
+	public GXPolygon[] polygons = new GXPolygon[512]; //supports up to 512 polygons rendering at the same time
 	public int nrpolygons = 0; //tells the renderer that we are rendering that many polygons.
+	public GXMatrix matrix = new GXMatrix();
 	
 	public static final int GX_ADD_POLYGON = 1;
 	public static final int GX_ADD_POLYGONS = 2;
@@ -23,6 +25,9 @@ public class Tier2GX implements IGX {
 	public static final int GX_SET_CLEAR_COLOR = 5;
 	public static final int GX_ENABLE_SELECTIVE_RENDER = 6;
 	public static final int GX_DO_RENDER = 7;
+	public static final int GX_LOAD_MATRIX = 8;
+	public static final int GX_MULTIPLY_MATRIX = 9;
+	public static final int GX_LOAD_IDENTITY_MATRIX = 10;
 	
 	public int error = 0;
 	public static final int GX_ERROR_NONE = 0;
@@ -41,9 +46,9 @@ public class Tier2GX implements IGX {
 	private void addPolygon(ByteArrayDataInput fifo)
 	{
 		if (polygons[nrpolygons] == null)
-			polygons[nrpolygons++] = new GXPolygon(fifo);
+			polygons[nrpolygons++] = new GXPolygon(fifo,matrix);
 		else
-			polygons[nrpolygons++].update(fifo);
+			polygons[nrpolygons++].update(fifo,matrix);
 	}
 
 	@Override
@@ -100,6 +105,18 @@ public class Tier2GX implements IGX {
 			{
 				doRender = true;
 			}
+			else if (b == GX_LOAD_MATRIX)
+			{
+				matrix = new GXMatrix(fifo);
+			}
+			else if (b == GX_MULTIPLY_MATRIX)
+			{
+				GXMatrix.mul(matrix, new GXMatrix(fifo), matrix);
+			}
+			else if (b == GX_LOAD_IDENTITY_MATRIX)
+			{
+				matrix = new GXMatrix();
+			}
 		}
 	}
 
@@ -116,6 +133,7 @@ public class Tier2GX implements IGX {
 		cB = 0.0F;
 		selectiveRender = false;
 		doRender = false;
+		matrix = new GXMatrix();
 	}
 	
 	@Override

@@ -28,6 +28,11 @@ return function(gxdev)
 		GX_CLEAR_POLYGONS = 3;
 		GX_DISABLE_CLEAR = 4;
 		GX_SET_CLEAR_COLOR = 5;
+		GX_ENABLE_SELECTIVE_RENDER = 6;
+		GX_DO_RENDER = 7;
+		GX_LOAD_MATRIX = 8;
+		GX_MULTIPLY_MATRIX = 9;
+		GX_LOAD_IDENTITY_MATRIX = 10;
 
 		--command argument constants--
 		GX_FMT_BASE85 = 0
@@ -92,7 +97,7 @@ return function(gxdev)
 			local nx = m[0]*x + m[1]*y + m[2]*z + m[3]
 			local ny = m[4]*x + m[5]*y + m[6]*z + m[7]
 			local nz = m[8]*x + m[9]*y + m[10]*z + m[11]
-			print("transformed "..x..","..y.." to "..nx..","..ny)
+			--print("transformed "..x..","..y.." to "..nx..","..ny)
 			return nx, ny, nz
 		end
 	
@@ -149,7 +154,6 @@ return function(gxdev)
 		local tMatrixStack = {}
 	
 		function gx.applyTransform(v)
-			print(transformMatrix)
 			return applyMatrix(transformMatrix,v[1],v[2])
 		end
 	
@@ -180,36 +184,47 @@ return function(gxdev)
 		function gx.clearStack()
 			tMatrixStack = {}
 		end
+		
+		function gx.uploadCurrentMatrix()
+			gxdev.writeByte(GX_LOAD_MATRIX)
+			gxdev.writeFloat(unpack(transformMatrix,0,15))
+		end
+		
+		function gx.multiplyCurrentMatrix()
+			gxdev.writeByte(GX_MULTIPLY_MATRIX)
+			gxdev.writeFloat(unpack(transformMatrix,0,15))
+		end
+		
+		function gx.identityGX()
+			gxdev.writwByte(GX_LOAD_IDENTITY_MATRIX)
+		end
 	end
 
 	function gx.addPolygon(...)
 		local args = {...}
 		if #args > 16 then error("Too many points for polygon") end
-		if #args < 3 then error("Need at least 3 points for polygon") end
 		gx.ensureFits(3+(#args*16))
 		gxdev.writeByte(GX_ADD_POLYGON,-1,255,255,255,255,#args)
 		for i, v in ipairs(args) do
 			local x,y = gx.applyTransform(v)
-			gxdev.writeFloat(x,y,0,0)
+			gxdev.writeFloat(x,y)
 		end
 	end
 	
 	function gx.addColoredPolygon(r,g,b,a,...)
 		local args = {...}
 		if #args > 16 then error("Too many points for polygon") end
-		if #args < 3 then error("Need at least 3 points for polygon") end
 		gx.ensureFits(3+(#args*16))
 		gxdev.writeByte(GX_ADD_POLYGON,-1,a,r,g,b,#args)
 		for i, v in ipairs(args) do
 			local x,y = gx.applyTransform(v)
-			gxdev.writeFloat(x,y,0,0)
+			gxdev.writeFloat(x,y)
 		end
 	end
 
 	function gx.addTexturedPolygon(tex,...)
 		local args = {...}
 		if #args > 16 then error("Too many points for polygon") end
-		if #args < 3 then error("Need at least 3 points for polygon") end
 		gx.ensureFits(3+(#args*16))
 		gxdev.writeByte(GX_ADD_POLYGON,tex,255,255,255,255,#args)
 		for i, v in ipairs(args) do
@@ -221,7 +236,6 @@ return function(gxdev)
 	function gx.addColoredTexturedPolygon(tex,r,g,b,a,...)
 		local args = {...}
 		if #args > 16 then error("Too many points for polygon") end
-		if #args < 3 then error("Need at least 3 points for polygon") end
 		gx.ensureFits(3+(#args*16))
 		gxdev.writeByte(GX_ADD_POLYGON,tex,a,r,g,b,#args)
 		for i, v in ipairs(args) do
@@ -284,6 +298,16 @@ return function(gxdev)
 		checkArg(2, data, "string")
 		checkArg(3, fmt, "number")
 		gxdev.uploadTexture(id,data,fmt)
+	end
+	
+	function gx.enableSelectiveRendering()
+		gx.ensureFits(1)
+		gxdev.writeByte(GX_ENABLE_SELECTIVE_RENDER)
+	end
+	
+	function gx.doRender()
+		gx.ensureFits(1)
+		gxdev.writeByte(GX_DO_RENDER)
 	end
 
 	function gx.getMonitor()
