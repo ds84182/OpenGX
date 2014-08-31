@@ -105,10 +105,13 @@ public class Tier1GX implements IGX {
 	
 	public boolean clear = true;
 	public float cR, cG, cB;
+	
+	public boolean requestRender = false;
 
 	@Override
 	public void uploadFIFO(ByteArrayDataInput fifo, byte[] fifoData) {
 		byte lastCommand = -1;
+		requestRender = true;
 		while (true)
 		{
 			byte b;
@@ -717,5 +720,15 @@ public class Tier1GX implements IGX {
 			packets.add(Pair.of(DataType.FIFO, bado.toByteArray()));
 		}
 		return packets;
+	}
+
+	@Override
+	public boolean needsRender() {
+		return requestRender;
+	}
+
+	@Override
+	public void requestRerender() {
+		requestRender = true;
 	}
 }

@@ -5,7 +5,6 @@ import java.util.Iterator;
 
 import net.minecraft.client.renderer.tileentity.TileEntitySpecialRenderer;
 import net.minecraft.tileentity.TileEntity;
-import net.minecraftforge.common.util.ForgeDirection;
 
 import org.lwjgl.opengl.GL11;
 
@@ -13,6 +12,7 @@ import ds.mods.opengx.client.RenderToFramebufferOverlay;
 import ds.mods.opengx.client.RenderUtils;
 import ds.mods.opengx.client.gx.GXFramebuffer;
 import ds.mods.opengx.tileentity.TileEntityExternalMonitor;
+import ds.mods.opengx.tileentity.TileEntityMonitor;
 
 public class TileEntityExternalMonitorRenderer extends
 		TileEntitySpecialRenderer {
@@ -26,10 +26,10 @@ public class TileEntityExternalMonitorRenderer extends
 			tile.fb = null;
 			if (tile.putInRenderList)
 			{
-				Iterator<WeakReference<TileEntityExternalMonitor>> iter = RenderToFramebufferOverlay.monitors.iterator();
+				Iterator<WeakReference<TileEntityMonitor>> iter = RenderToFramebufferOverlay.monitors.iterator();
 				while (iter.hasNext())
 				{
-					WeakReference<TileEntityExternalMonitor> w = iter.next();
+					WeakReference<TileEntityMonitor> w = iter.next();
 					if (w.get() == tile)
 					{
 						iter.remove();
@@ -42,7 +42,7 @@ public class TileEntityExternalMonitorRenderer extends
 		if (!tile.putInRenderList)
 		{
 			tile.putInRenderList = true;
-			RenderToFramebufferOverlay.monitors.add(new WeakReference<TileEntityExternalMonitor>(tile));
+			RenderToFramebufferOverlay.monitors.add(new WeakReference<TileEntityMonitor>(tile));
 		}
 		
 		GL11.glPushMatrix();

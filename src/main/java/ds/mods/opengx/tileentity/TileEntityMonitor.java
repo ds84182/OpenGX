@@ -15,13 +15,17 @@ import net.minecraft.network.Packet;
 import net.minecraft.network.play.server.S35PacketUpdateTileEntity;
 import net.minecraftforge.common.util.ForgeDirection;
 import cpw.mods.fml.common.network.NetworkRegistry.TargetPoint;
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
 import ds.mods.opengx.OpenGX;
+import ds.mods.opengx.client.gx.GXFramebuffer;
+import ds.mods.opengx.component.ComponentGX;
 import ds.mods.opengx.network.MonitorOwnMessage;
 import ds.mods.opengx.network.MonitorSizeMessage;
 import ds.mods.opengx.util.MonitorDiscovery;
 
 public class TileEntityMonitor extends TileEntityEnvironment {
-	public TileEntityGX owner;
+	public ComponentGX owner;
 	public int width = 128;
 	public int height = 96;
 	
@@ -29,9 +33,12 @@ public class TileEntityMonitor extends TileEntityEnvironment {
 	
 	public ForgeDirection facing = ForgeDirection.NORTH;
 	
+	@SideOnly(Side.CLIENT)
+	public GXFramebuffer fb;
+	
 	public TileEntityMonitor()
 	{
-		node = Network.newNode(this, Visibility.Network).withComponent("gxmonitor").create();
+		node = Network.newNode(this, Visibility.Neighbors).withComponent("gxmonitor").create();
 	}
 
 	@Override
@@ -102,20 +109,22 @@ public class TileEntityMonitor extends TileEntityEnvironment {
         		entityplayer.getDistanceSq(xCoord + 0.5, yCoord + 0.5, zCoord + 0.5) < 64;
 	}
 	
-	public void setOwner(TileEntityGX o)
+	public void setOwner(ComponentGX gx)
 	{
-		owner = o;
+		owner = gx;
 		MonitorOwnMessage m = new MonitorOwnMessage();
 		m.mx = this.xCoord;
 		m.my = this.yCoord;
 		m.mz = this.zCoord;
 		
-		if (o != null)
+		if (gx != null)
 		{
 			m.hasOwner = true;
-			m.ox = o.xCoord;
-			m.oy = o.yCoord;
-			m.oz = o.zCoord;
+			m.uuid = gx.uuid;
+			m.tier = gx.tier;
+			
+			if (gx.gx != null)
+				gx.gx.requestRerender();
 		}
 		
 		OpenGX.network.sendToAllAround(m, new TargetPoint(worldObj.provider.dimensionId, xCoord, yCoord, zCoord, 64D));
@@ -147,6 +156,13 @@ public class TileEntityMonitor extends TileEntityEnvironment {
 	public void onDataPacket(NetworkManager net, S35PacketUpdateTileEntity pkt) {
 		if (worldObj.isRemote)
 			readFromNBT(pkt.func_148857_g());
+	}
+
+	@Override
+	public void invalidate() {
+		super.invalidate();
+		if (owner != null)
+			owner.monitor = null;
 	}
 
 }

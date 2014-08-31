@@ -5,6 +5,7 @@ import net.minecraft.tileentity.TileEntity;
 import cpw.mods.fml.common.network.simpleimpl.IMessage;
 import cpw.mods.fml.common.network.simpleimpl.IMessageHandler;
 import cpw.mods.fml.common.network.simpleimpl.MessageContext;
+import ds.mods.opengx.component.ComponentGX;
 import ds.mods.opengx.tileentity.TileEntityGX;
 import ds.mods.opengx.tileentity.TileEntityMonitor;
 
@@ -19,11 +20,7 @@ public class MonitorOwnMessageHandler implements IMessageHandler<MonitorOwnMessa
 			TileEntityMonitor mon = (TileEntityMonitor) tmp;
 			if (message.hasOwner)
 			{
-				tmp = Minecraft.getMinecraft().theWorld.getTileEntity(message.ox, message.oy, message.oz);
-				if (tmp instanceof TileEntityGX)
-				{
-					mon.owner = (TileEntityGX) tmp;
-				}
+				mon.owner = ComponentGX.get(message.uuid, Minecraft.getMinecraft().theWorld, message.tier);
 			}
 			else
 			{

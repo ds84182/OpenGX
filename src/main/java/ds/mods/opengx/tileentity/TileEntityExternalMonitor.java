@@ -4,10 +4,11 @@ import java.util.Random;
 
 import li.cil.oc.api.Network;
 import li.cil.oc.api.network.Visibility;
+import net.minecraft.nbt.NBTTagCompound;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import ds.mods.opengx.client.gx.GXFramebuffer;
-import net.minecraft.nbt.NBTTagCompound;
+import ds.mods.opengx.component.ComponentGX;
 
 public class TileEntityExternalMonitor extends TileEntityMonitor {
 	public float r, g, b;
@@ -18,9 +19,6 @@ public class TileEntityExternalMonitor extends TileEntityMonitor {
 	public int tiltest = 5;
 	public boolean canConnect = true;
 	public boolean putInRenderList = false;
-	
-	@SideOnly(Side.CLIENT)
-	public GXFramebuffer fb;
 	
 	public int[][][] facingToOrient = {
 		{{1,0},{0,0},{0,1}}, //DOWN
@@ -261,7 +259,7 @@ public class TileEntityExternalMonitor extends TileEntityMonitor {
 	}
 
 	@Override
-	public void setOwner(TileEntityGX o) {
+	public void setOwner(ComponentGX o) {
 		super.setOwner(o);
 		updateVolume();
 	}

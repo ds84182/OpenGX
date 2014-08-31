@@ -41,7 +41,7 @@ for i=1, spnum do
 		s.dy = -s.dy
 	end
 end
-print("Fifo Sprite Init Size: "..component.gxt1.getFifoUsage())
+print("Fifo Sprite Init Size: "..component.gx.getFifoUsage())
 gx.render()
 
 local gfifosize = false
@@ -65,7 +65,7 @@ while true do
 		gx.setSpriteVariable(i,GX_SPRITE_VAR_XY,s.x,s.y)
 	end
 	if not gfifosize then
-		print("Fifo Sprite Move Size: "..component.gxt1.getFifoUsage())
+		print("Fifo Sprite Move Size: "..component.gx.getFifoUsage())
 		gfifosize = true
 	end
 	gx.render()

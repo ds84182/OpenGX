@@ -1,11 +1,15 @@
 package ds.mods.opengx.network;
 
 import io.netty.buffer.ByteBuf;
+
+import java.util.UUID;
+
 import cpw.mods.fml.common.network.simpleimpl.IMessage;
 
 public class MonitorOwnMessage implements IMessage {
 	public int mx, my, mz;
-	public int ox, oy, oz;
+	public UUID uuid;
+	public int tier;
 	public boolean hasOwner;
 
 	@Override
@@ -16,9 +20,8 @@ public class MonitorOwnMessage implements IMessage {
 		hasOwner = buf.readBoolean();
 		if (hasOwner)
 		{
-			ox = buf.readInt();
-			oy = buf.readInt();
-			oz = buf.readInt();
+			uuid = new UUID(buf.readLong(), buf.readLong());
+			tier = buf.readInt();
 		}
 	}
 
@@ -30,9 +33,9 @@ public class MonitorOwnMessage implements IMessage {
 		buf.writeBoolean(hasOwner);
 		if (hasOwner)
 		{
-			buf.writeInt(ox);
-			buf.writeInt(oy);
-			buf.writeInt(oz);
+			buf.writeLong(uuid.getMostSignificantBits());
+			buf.writeLong(uuid.getLeastSignificantBits());
+			buf.writeInt(tier);
 		}
 	}
 

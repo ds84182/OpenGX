@@ -4,6 +4,7 @@ import li.cil.oc.api.network.Node;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiScreen;
 
+import org.lwjgl.opengl.Display;
 import org.lwjgl.opengl.GL11;
 
 import ds.mods.opengx.client.RenderUtils;
@@ -16,6 +17,7 @@ public class GuiMonitor extends GuiScreen {
 
 	public GuiMonitor(TileEntityMonitor m)
 	{
+		super();
 		mon = m;
 	}
 
@@ -23,10 +25,12 @@ public class GuiMonitor extends GuiScreen {
 	public void drawScreen(int par1, int par2, float par3) {
 		super.drawScreen(par1, par2, par3);
 		this.drawDefaultBackground();
-		float scale = Minecraft.getMinecraft().gameSettings.guiScale;
-		float gscale = 1F/Minecraft.getMinecraft().gameSettings.guiScale;
-		float x = (this.width/(2F/scale))-(mon.width/2F);
-		float y = (this.height/(2F/scale))-(mon.height/2F);
+		float scale = this.width/(float)Display.getWidth();
+		float gscale = 1F/scale;
+		float monwidth = mon.width*(mon.width > width || mon.height > height ? scale : 1F);
+		float monheight = mon.height*(mon.width > width || mon.height > height ? scale : 1F);
+		float x = (this.width/2F)-(monwidth/2F);
+		float y = (this.height/2F)-(monheight/2F);
 		if (mon.width != fb.width || mon.height != fb.height)
 		{
 			fb = new GXFramebuffer(mon.width, mon.height);
@@ -39,10 +43,10 @@ public class GuiMonitor extends GuiScreen {
 			GL11.glEnable(GL11.GL_TEXTURE_2D);
 			fb.bindTexture();
 			GL11.glPushMatrix();
-			GL11.glScalef(gscale, gscale, gscale);
-			RenderUtils.setColor(0, 0, 0);
-			RenderUtils.rectangle(x, y, mon.width, mon.height);
-			RenderUtils.texturedRectangle(x, y, mon.width, mon.height, 0F, 1F, 1F, 0F);
+			//GL11.glScalef(gscale, gscale, gscale);
+			RenderUtils.setColor(0,0,0);
+			RenderUtils.rectangle(x, y, monwidth, monheight);
+			RenderUtils.texturedRectangle(x, y, monwidth, monheight, 0F, 1F, 1F, 0F);
 			GL11.glPopMatrix();
 			fb.unbindTexture();
 		}
@@ -51,6 +55,7 @@ public class GuiMonitor extends GuiScreen {
 	@Override
 	public void initGui() {
 		fb = new GXFramebuffer(mon.width, mon.height);
+		System.out.printf("%d %d\n", mon.width, mon.height);
 	}
 
 	@Override

@@ -6,26 +6,26 @@ import java.util.Iterator;
 
 import net.minecraftforge.client.event.RenderGameOverlayEvent;
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
-import ds.mods.opengx.tileentity.TileEntityExternalMonitor;
+import ds.mods.opengx.tileentity.TileEntityMonitor;
 
 public class RenderToFramebufferOverlay {
-	public static ArrayList<WeakReference<TileEntityExternalMonitor>> monitors = new ArrayList<WeakReference<TileEntityExternalMonitor>>();
+	public static ArrayList<WeakReference<TileEntityMonitor>> monitors = new ArrayList<WeakReference<TileEntityMonitor>>();
 
 	@SubscribeEvent
 	public void renderOverlay(RenderGameOverlayEvent.Post event)
 	{
 		//cleanse monitor list
-		Iterator<WeakReference<TileEntityExternalMonitor>> iter = monitors.iterator();
+		Iterator<WeakReference<TileEntityMonitor>> iter = monitors.iterator();
 		while (iter.hasNext())
 		{
-			WeakReference<TileEntityExternalMonitor> w = iter.next();
+			WeakReference<TileEntityMonitor> w = iter.next();
 			if (w.get() == null)
 			{
 				iter.remove();
 			}
 			else
 			{
-				TileEntityExternalMonitor ex = (TileEntityExternalMonitor) w.get();
+				TileEntityMonitor ex = (TileEntityMonitor) w.get();
 				if (ex.fb != null && ex.owner != null)
 				{
 					ex.fb.bind();

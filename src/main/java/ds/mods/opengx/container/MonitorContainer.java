@@ -9,6 +9,7 @@ public class MonitorContainer extends Container {
 	
 	public MonitorContainer(TileEntityMonitor t)
 	{
+		super();
 		tile = t;
 	}
 

@@ -37,6 +37,14 @@ public interface IGX {
 	 */
 	public void render(int fbwidth, int fbheight);
 	/**
+	 * Used by the renderer to poll if the gx needs to be rerendered
+	 */
+	public boolean needsRender();
+	/**
+	 * Used by monitors to tell the GPU it needs to request a re render
+	 */
+	public void requestRerender();
+	/**
 	 * Reset the GX
 	 */
 	public void reset();

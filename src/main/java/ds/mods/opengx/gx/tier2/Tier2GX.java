@@ -23,11 +23,9 @@ public class Tier2GX implements IGX {
 	public static final int GX_CLEAR_POLYGONS = 3;
 	public static final int GX_DISABLE_CLEAR = 4;
 	public static final int GX_SET_CLEAR_COLOR = 5;
-	public static final int GX_ENABLE_SELECTIVE_RENDER = 6;
-	public static final int GX_DO_RENDER = 7;
-	public static final int GX_LOAD_MATRIX = 8;
-	public static final int GX_MULTIPLY_MATRIX = 9;
-	public static final int GX_LOAD_IDENTITY_MATRIX = 10;
+	public static final int GX_LOAD_MATRIX = 6;
+	public static final int GX_MULTIPLY_MATRIX = 7;
+	public static final int GX_LOAD_IDENTITY_MATRIX = 8;
 	
 	public int error = 0;
 	public static final int GX_ERROR_NONE = 0;
@@ -40,8 +38,7 @@ public class Tier2GX implements IGX {
 	public boolean clear = true;
 	public float cR, cG, cB;
 	
-	public boolean selectiveRender = false;
-	public boolean doRender = false;
+	public boolean requestRender = false;
 	
 	private void addPolygon(ByteArrayDataInput fifo)
 	{
@@ -53,6 +50,7 @@ public class Tier2GX implements IGX {
 
 	@Override
 	public void uploadFIFO(ByteArrayDataInput fifo, byte[] fifoData) {
+		requestRender = true;
 		byte lastCommand = -1;
 		while (true)
 		{
@@ -97,14 +95,6 @@ public class Tier2GX implements IGX {
 				cG = fifo.readFloat();
 				cB = fifo.readFloat();
 			}
-			else if (b == GX_ENABLE_SELECTIVE_RENDER)
-			{
-				selectiveRender = true;
-			}
-			else if (b == GX_DO_RENDER)
-			{
-				doRender = true;
-			}
 			else if (b == GX_LOAD_MATRIX)
 			{
 				matrix = new GXMatrix(fifo);
@@ -131,8 +121,6 @@ public class Tier2GX implements IGX {
 		cR = 0.0F;
 		cG = 0.0F;
 		cB = 0.0F;
-		selectiveRender = false;
-		doRender = false;
 		matrix = new GXMatrix();
 	}
 	
@@ -180,4 +168,13 @@ public class Tier2GX implements IGX {
 		
 	}
 	
+	@Override
+	public boolean needsRender() {
+		return requestRender;
+	}
+
+	@Override
+	public void requestRerender() {
+		requestRender = true;
+	}
 }

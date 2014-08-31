@@ -28,11 +28,9 @@ return function(gxdev)
 		GX_CLEAR_POLYGONS = 3;
 		GX_DISABLE_CLEAR = 4;
 		GX_SET_CLEAR_COLOR = 5;
-		GX_ENABLE_SELECTIVE_RENDER = 6;
-		GX_DO_RENDER = 7;
-		GX_LOAD_MATRIX = 8;
-		GX_MULTIPLY_MATRIX = 9;
-		GX_LOAD_IDENTITY_MATRIX = 10;
+		GX_LOAD_MATRIX = 6;
+		GX_MULTIPLY_MATRIX = 7;
+		GX_LOAD_IDENTITY_MATRIX = 8;
 
 		--command argument constants--
 		GX_FMT_BASE85 = 0
@@ -298,16 +296,6 @@ return function(gxdev)
 		checkArg(2, data, "string")
 		checkArg(3, fmt, "number")
 		gxdev.uploadTexture(id,data,fmt)
-	end
-	
-	function gx.enableSelectiveRendering()
-		gx.ensureFits(1)
-		gxdev.writeByte(GX_ENABLE_SELECTIVE_RENDER)
-	end
-	
-	function gx.doRender()
-		gx.ensureFits(1)
-		gxdev.writeByte(GX_DO_RENDER)
 	end
 
 	function gx.getMonitor()
