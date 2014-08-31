@@ -52,7 +52,7 @@ public class TileEntityGX extends TileEntityEnvironment {
 		{
 			component = ComponentGX.get(uuid, worldObj, tier);
 			node = component.node();
-			component.owner = new Owner()
+			component.own = new Owner()
 			{
 
 				@Override

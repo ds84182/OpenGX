@@ -39,7 +39,7 @@ public class BlockMonitor extends Block {
 		if (tileEntity == null || player.isSneaking()) {
 			return false;
 		}
-		if (((TileEntityMonitor)tileEntity).owner == null)
+		if (((TileEntityMonitor)tileEntity).mon.owner == null)
 			return false;
 		player.openGui(OpenGX.instance, 0, world, x, y, z);
 		return true;
@@ -62,7 +62,8 @@ public class BlockMonitor extends Block {
 			TileEntity tile = ba.getTileEntity(x, y, z);
 			if (tile != null && tile instanceof TileEntityMonitor)
 			{
-				return ((TileEntityMonitor)tile).owner == null ? off : on;
+				TileEntityMonitor m = (TileEntityMonitor)tile;
+				return m.mon != null && m.mon.owner == null ? off : on;
 			}
 			else
 			{

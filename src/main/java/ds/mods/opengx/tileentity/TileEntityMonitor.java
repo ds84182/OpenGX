@@ -1,9 +1,9 @@
 package ds.mods.opengx.tileentity;
 
+import java.util.UUID;
+
 import li.cil.oc.api.Network;
-import li.cil.oc.api.network.Arguments;
-import li.cil.oc.api.network.Callback;
-import li.cil.oc.api.network.Context;
+import li.cil.oc.api.machine.Owner;
 import li.cil.oc.api.network.Message;
 import li.cil.oc.api.network.Node;
 import li.cil.oc.api.network.Visibility;
@@ -13,156 +13,157 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.NetworkManager;
 import net.minecraft.network.Packet;
 import net.minecraft.network.play.server.S35PacketUpdateTileEntity;
+import net.minecraft.world.World;
 import net.minecraftforge.common.util.ForgeDirection;
-import cpw.mods.fml.common.network.NetworkRegistry.TargetPoint;
-import cpw.mods.fml.relauncher.Side;
-import cpw.mods.fml.relauncher.SideOnly;
-import ds.mods.opengx.OpenGX;
-import ds.mods.opengx.client.gx.GXFramebuffer;
-import ds.mods.opengx.component.ComponentGX;
-import ds.mods.opengx.network.MonitorOwnMessage;
-import ds.mods.opengx.network.MonitorSizeMessage;
-import ds.mods.opengx.util.MonitorDiscovery;
+import ds.mods.opengx.component.ComponentMonitor;
 
 public class TileEntityMonitor extends TileEntityEnvironment {
-	public ComponentGX owner;
-	public int width = 128;
-	public int height = 96;
-	
-	public int countdown = 100;
-	
+	public ComponentMonitor mon;
+
+	public UUID uuid = UUID.randomUUID();
 	public ForgeDirection facing = ForgeDirection.NORTH;
-	
-	@SideOnly(Side.CLIENT)
-	public GXFramebuffer fb;
-	
-	public TileEntityMonitor()
+
+	public void makeINE()
 	{
-		node = Network.newNode(this, Visibility.Neighbors).withComponent("gxmonitor").create();
+		if (mon != null)
+			return;
+		mon = ComponentMonitor.get(uuid, worldObj, 1);
+		node = mon.node();
+		mon.own = new Owner()
+		{
+
+			@Override
+			public Node node() {
+				return mon.node();
+			}
+
+			@Override
+			public boolean canInteract(String player) {
+				return true;
+			}
+
+			@Override
+			public boolean isRunning() {
+				return false;
+			}
+
+			@Override
+			public boolean isPaused() {
+				return false;
+			}
+
+			@Override
+			public boolean start() {
+				return false;
+			}
+
+			@Override
+			public boolean pause(double seconds) {
+				return false;
+			}
+
+			@Override
+			public boolean stop() {
+				return false;
+			}
+
+			@Override
+			public boolean signal(String name, Object... args) {
+				return false;
+			}
+
+			@Override
+			public int x() {
+				return xCoord;
+			}
+
+			@Override
+			public int y() {
+				return yCoord;
+			}
+
+			@Override
+			public int z() {
+				return zCoord;
+			}
+
+			@Override
+			public World world() {
+				return worldObj;
+			}
+
+			@Override
+			public int installedMemory() {
+				return 0;
+			}
+
+			@Override
+			public int maxComponents() {
+				return 0;
+			}
+
+			@Override
+			public void markAsChanged() {
+
+			}
+
+			@Override
+			public void onMachineConnect(Node node) {
+
+			}
+
+			@Override
+			public void onMachineDisconnect(Node node) {
+
+			}
+
+		};
 	}
 
 	@Override
 	public void updateEntity() {
+		if (mon == null)
+		{
+			makeINE();
+		}
 		super.updateEntity();
-		if (countdown-- == 0)
-		{
-			countdown = 100;
-			MonitorSizeMessage msm = new MonitorSizeMessage();
-			msm.x = xCoord;
-			msm.y = yCoord;
-			msm.z = zCoord;
-			msm.w = width;
-			msm.h = height;
-			OpenGX.network.sendToAllAround(msm, new TargetPoint(worldObj.provider.dimensionId, xCoord, yCoord, zCoord, 64D));
-		}
+		mon.update();
 	}
 
 	@Override
-	public void onConnect(Node node) {
-		super.onConnect(node);
-	}
-
-	@Override
-	public void onDisconnect(Node node) {
-		System.out.println("Dis");
-		if (owner != null && owner.node().address().equals(node.address()))
-		{
-			setOwner(null);
-		}
-	}
-
-	@Override
-	public void onMessage(Message message) {
-		if (message.name().equals("monitor_discovery") && owner == null)
-		{
-			((MonitorDiscovery)message.data()[0]).foundMonitors.add(this);
-		}
-	}
-	
-	 @Override
 	public void readFromNBT(NBTTagCompound nbt) {
 		super.readFromNBT(nbt);
-		width = nbt.getInteger("width");
-		height = nbt.getInteger("height");
 		facing = ForgeDirection.VALID_DIRECTIONS[nbt.getByte("facing")];
+		uuid = new UUID(nbt.getLong("msb"),nbt.getLong("lsb"));
+		mon = null;
 	}
 
 	@Override
 	public void writeToNBT(NBTTagCompound nbt) {
 		super.writeToNBT(nbt);
-		nbt.setInteger("width", width);
-		nbt.setInteger("height", height);
 		nbt.setByte("facing", (byte) facing.ordinal());
+		nbt.setLong("lsb", uuid.getLeastSignificantBits());
+		nbt.setLong("msb", uuid.getMostSignificantBits());
 	}
 
 	public Packet getDescriptionPacket()
 	{
-		setOwner(owner);
+		if (mon != null) mon.setOwner(mon.owner);
 		NBTTagCompound nbttagcompound = new NBTTagCompound();
 		this.writeToNBT(nbttagcompound);
 		return new S35PacketUpdateTileEntity(this.xCoord, this.yCoord, this.zCoord, 3, nbttagcompound);
 	}
-	
-	public boolean isUseableByPlayer(EntityPlayer entityplayer) {
-        return owner != null && 
-        		worldObj.getTileEntity(xCoord, yCoord, zCoord) == this &&
-        		entityplayer.getDistanceSq(xCoord + 0.5, yCoord + 0.5, zCoord + 0.5) < 64;
-	}
-	
-	public void setOwner(ComponentGX gx)
-	{
-		owner = gx;
-		MonitorOwnMessage m = new MonitorOwnMessage();
-		m.mx = this.xCoord;
-		m.my = this.yCoord;
-		m.mz = this.zCoord;
-		
-		if (gx != null)
-		{
-			m.hasOwner = true;
-			m.uuid = gx.uuid;
-			m.tier = gx.tier;
-			
-			if (gx.gx != null)
-				gx.gx.requestRerender();
-		}
-		
-		OpenGX.network.sendToAllAround(m, new TargetPoint(worldObj.provider.dimensionId, xCoord, yCoord, zCoord, 64D));
-	}
-	
-	@Callback(direct=true)
-	public Object[] getSize(Context context, Arguments arguments)
-	{
-		return new Object[]{width, height};
-	}
-	
-	@Callback(direct=true,limit=1)
-	public Object[] setSize(Context context, Arguments arguments)
-	{
-		int w = arguments.checkInteger(0), h = arguments.checkInteger(1);
-		if (w<1 || h<1 || w>512 || h>512)
-			return new Object[]{false, "Size out of bounds (<0 or >512)"};
-		width = w;
-		height = h;
-		onChanged();
-		return new Object[]{true};
-	}
 
-	public void onChanged() {
-		
+	public boolean isUseableByPlayer(EntityPlayer entityplayer) {
+		return mon.owner != null && 
+				worldObj.getTileEntity(xCoord, yCoord, zCoord) == this &&
+				entityplayer.getDistanceSq(xCoord + 0.5, yCoord + 0.5, zCoord + 0.5) < 64;
 	}
 
 	@Override
 	public void onDataPacket(NetworkManager net, S35PacketUpdateTileEntity pkt) {
 		if (worldObj.isRemote)
 			readFromNBT(pkt.func_148857_g());
-	}
-
-	@Override
-	public void invalidate() {
-		super.invalidate();
-		if (owner != null)
-			owner.monitor = null;
 	}
 
 }

@@ -32,7 +32,7 @@ public class GuiHandler implements IGuiHandler {
 			TileEntity tile = world.getTileEntity(x, y, z);
 			if (tile instanceof TileEntityMonitor)
 			{
-				return new GuiMonitor((TileEntityMonitor) tile);
+				return new GuiMonitor(((TileEntityMonitor) tile).mon);
 			}
 		}
 		return null;

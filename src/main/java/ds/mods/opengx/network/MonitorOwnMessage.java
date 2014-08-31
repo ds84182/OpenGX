@@ -7,16 +7,14 @@ import java.util.UUID;
 import cpw.mods.fml.common.network.simpleimpl.IMessage;
 
 public class MonitorOwnMessage implements IMessage {
-	public int mx, my, mz;
+	public UUID muuid;
 	public UUID uuid;
 	public int tier;
 	public boolean hasOwner;
 
 	@Override
 	public void fromBytes(ByteBuf buf) {
-		mx = buf.readInt();
-		my = buf.readInt();
-		mz = buf.readInt();
+		muuid = new UUID(buf.readLong(), buf.readLong());
 		hasOwner = buf.readBoolean();
 		if (hasOwner)
 		{
@@ -27,9 +25,8 @@ public class MonitorOwnMessage implements IMessage {
 
 	@Override
 	public void toBytes(ByteBuf buf) {
-		buf.writeInt(mx);
-		buf.writeInt(my);
-		buf.writeInt(mz);
+		buf.writeLong(muuid.getMostSignificantBits());
+		buf.writeLong(muuid.getLeastSignificantBits());
 		buf.writeBoolean(hasOwner);
 		if (hasOwner)
 		{

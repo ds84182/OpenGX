@@ -5,19 +5,17 @@ import net.minecraft.tileentity.TileEntity;
 import cpw.mods.fml.common.network.simpleimpl.IMessage;
 import cpw.mods.fml.common.network.simpleimpl.IMessageHandler;
 import cpw.mods.fml.common.network.simpleimpl.MessageContext;
+import ds.mods.opengx.component.ComponentMonitor;
 import ds.mods.opengx.tileentity.TileEntityMonitor;
 
 public class MonitorSizeMessageHandler implements IMessageHandler<MonitorSizeMessage, IMessage> {
 
 	@Override
 	public IMessage onMessage(MonitorSizeMessage message, MessageContext ctx) {
-		TileEntity tile = Minecraft.getMinecraft().theWorld.getTileEntity(message.x, message.y, message.z);
-		if (tile instanceof TileEntityMonitor)
-		{
-			((TileEntityMonitor) tile).width = message.w;
-			((TileEntityMonitor) tile).height = message.h;
-			((TileEntityMonitor) tile).onChanged();
-		}
+		ComponentMonitor mon = ComponentMonitor.get(message.uuid, Minecraft.getMinecraft().theWorld, 1);
+		mon.width = message.w;
+		mon.height = message.h;
+		mon.onChanged();
 		return null;
 	}
 

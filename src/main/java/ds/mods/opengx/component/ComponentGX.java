@@ -30,7 +30,7 @@ import ds.mods.opengx.network.GXTextureUploadMessage;
 import ds.mods.opengx.tileentity.TileEntityMonitor;
 import ds.mods.opengx.util.MonitorDiscovery;
 
-public class ComponentGX implements ManagedEnvironment {
+public class ComponentGX extends Component implements ManagedEnvironment {
 	public static final WeakHashMap<UUID,ComponentGX> serverCGX = new WeakHashMap<UUID,ComponentGX>();
 	public static final WeakHashMap<UUID,ComponentGX> clientCGX = new WeakHashMap<UUID,ComponentGX>();
 	
@@ -54,32 +54,17 @@ public class ComponentGX implements ManagedEnvironment {
 	public ByteArrayDataOutput fifo;
 	public int fifoBytes;
 	public int fifoSize;
-	public int tier = 1;
 	public boolean initd = false;
 	
-	public TileEntityMonitor monitor;
+	public ComponentMonitor monitor;
 	public String monitorAddress;
 	public int monitorDiscoveryCountDown = 10;
 	public MonitorDiscovery currentDiscovery;
 	public int discoverCountDown = 10;
 	public int monitorAddressFailures = 0;
 	
-	public World worldObj;
-	public UUID uuid;
-	public Owner owner;
-	
-	public ComponentGX(World world, int t)
-	{
-		worldObj = world;
-		uuid = UUID.randomUUID();
-		tier = t;
-	}
-	
-	public ComponentGX(UUID uui, World world, int t)
-	{
-		worldObj = world;
-		uuid = uui;
-		tier = t;
+	public ComponentGX(UUID uui, World world, int t) {
+		super(uui, world, t);
 	}
 	
 	@Override
@@ -247,7 +232,7 @@ public class ComponentGX implements ManagedEnvironment {
 					discoverCountDown--;
 					if (discoverCountDown <= 0 && currentDiscovery.foundMonitors.size() > 0)
 					{
-						TileEntityMonitor closestMonitor = currentDiscovery.foundMonitors.get(0);
+						ComponentMonitor closestMonitor = currentDiscovery.foundMonitors.get(0);
 						/*double dist = Double.MAX_VALUE;
 						for (TileEntityMonitor te : currentDiscovery.foundMonitors)
 						{
@@ -282,7 +267,7 @@ public class ComponentGX implements ManagedEnvironment {
 				{
 					if (n.address().equals(monitorAddress))
 					{
-						monitor = (TileEntityMonitor) n.host();
+						monitor = (ComponentMonitor) n.host();
 						monitor.setOwner(this);
 						for (Node noe : node().reachableNodes())
 						{
@@ -386,7 +371,7 @@ public class ComponentGX implements ManagedEnvironment {
 			msg.uuid = uuid;
 			msg.tier = tier;
 			msg.data = data;
-			OpenGX.network.sendToAllAround(msg, new TargetPoint(worldObj.provider.dimensionId, owner.x(), owner.y(), owner.z(), 64));
+			OpenGX.network.sendToAllAround(msg, new TargetPoint(worldObj.provider.dimensionId, own.x(), own.y(), own.z(), 64));
 		}
 		catch (Exception ex)
 		{
@@ -413,7 +398,7 @@ public class ComponentGX implements ManagedEnvironment {
 		msg.id = id;
 		msg.fmt = fmt;
 		msg.data = data;
-		OpenGX.network.sendToAllAround(msg, new TargetPoint(worldObj.provider.dimensionId, owner.x(), owner.y(), owner.z(), 64));
+		OpenGX.network.sendToAllAround(msg, new TargetPoint(worldObj.provider.dimensionId, own.x(), own.y(), own.z(), 64));
 		gx.uploadTexture(id, new ByteArrayInputStream(data), fmt);
 		//technically, the fifo would have to be copied into memory in order for a texture to upload
 		//context.pause((data.length/1024D)*(1/5D));

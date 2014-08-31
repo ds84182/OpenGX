@@ -1,7 +1,5 @@
 package ds.mods.opengx.client.gui;
 
-import li.cil.oc.api.network.Node;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiScreen;
 
 import org.lwjgl.opengl.Display;
@@ -9,13 +7,12 @@ import org.lwjgl.opengl.GL11;
 
 import ds.mods.opengx.client.RenderUtils;
 import ds.mods.opengx.client.gx.GXFramebuffer;
-import ds.mods.opengx.tileentity.TileEntityMonitor;
+import ds.mods.opengx.component.ComponentMonitor;
 
 public class GuiMonitor extends GuiScreen {
-	GXFramebuffer fb;
-	TileEntityMonitor mon;
+	ComponentMonitor mon;
 
-	public GuiMonitor(TileEntityMonitor m)
+	public GuiMonitor(ComponentMonitor m)
 	{
 		super();
 		mon = m;
@@ -31,30 +28,35 @@ public class GuiMonitor extends GuiScreen {
 		float monheight = mon.height*(mon.width > width || mon.height > height ? scale : 1F);
 		float x = (this.width/2F)-(monwidth/2F);
 		float y = (this.height/2F)-(monheight/2F);
-		if (mon.width != fb.width || mon.height != fb.height)
+		
+		if (mon.fb == null)
 		{
-			fb = new GXFramebuffer(mon.width, mon.height);
+			mon.fb = new GXFramebuffer(mon.width, mon.height);
 		}
+		if (mon.fb.width != mon.width || mon.fb.height != mon.height)
+		{
+			mon.fb = new GXFramebuffer(mon.width, mon.height);
+		}
+		
 		if (mon.owner != null && mon.owner.gx != null)
 		{
-			fb.bind();
+			mon.fb.bind();
 			mon.owner.gx.render(mon.width, mon.height);
-			fb.unbind();
+			mon.fb.unbind();
 			GL11.glEnable(GL11.GL_TEXTURE_2D);
-			fb.bindTexture();
+			mon.fb.bindTexture();
 			GL11.glPushMatrix();
 			//GL11.glScalef(gscale, gscale, gscale);
 			RenderUtils.setColor(0,0,0);
 			RenderUtils.rectangle(x, y, monwidth, monheight);
 			RenderUtils.texturedRectangle(x, y, monwidth, monheight, 0F, 1F, 1F, 0F);
 			GL11.glPopMatrix();
-			fb.unbindTexture();
+			mon.fb.unbindTexture();
 		}
 	}
 
 	@Override
 	public void initGui() {
-		fb = new GXFramebuffer(mon.width, mon.height);
 		System.out.printf("%d %d\n", mon.width, mon.height);
 	}
 

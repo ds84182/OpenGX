@@ -3,12 +3,11 @@ package ds.mods.opengx.tileentity;
 import java.util.Random;
 
 import li.cil.oc.api.Network;
+import li.cil.oc.api.network.Node;
 import li.cil.oc.api.network.Visibility;
 import net.minecraft.nbt.NBTTagCompound;
-import cpw.mods.fml.relauncher.Side;
-import cpw.mods.fml.relauncher.SideOnly;
-import ds.mods.opengx.client.gx.GXFramebuffer;
 import ds.mods.opengx.component.ComponentGX;
+import ds.mods.opengx.component.ComponentMonitor;
 
 public class TileEntityExternalMonitor extends TileEntityMonitor {
 	public float r, g, b;
@@ -18,7 +17,6 @@ public class TileEntityExternalMonitor extends TileEntityMonitor {
 	public static final int MAX_HEIGHT = 8;
 	public int tiltest = 5;
 	public boolean canConnect = true;
-	public boolean putInRenderList = false;
 	
 	public int[][][] facingToOrient = {
 		{{1,0},{0,0},{0,1}}, //DOWN
@@ -77,13 +75,14 @@ public class TileEntityExternalMonitor extends TileEntityMonitor {
 				rtile.mY = y;
 				rtile.mWidth = mWidth;
 				rtile.mHeight = mHeight;
-				rtile.width = width;
-				rtile.height = height;
-				if (rtile.owner != owner && rtile.owner != null)
+				if (rtile.mon != mon && rtile.mon != null)
 				{
-					rtile.owner.monitor = null;
+					for (Node n : rtile.mon.node().network().nodes(rtile.mon.node()))
+					{
+						n.network().disconnect(n, rtile.mon.node());
+					}
 				}
-				rtile.owner = owner;
+				rtile.mon = mon;
 			}
 		}
 	}
@@ -228,6 +227,7 @@ public class TileEntityExternalMonitor extends TileEntityMonitor {
 					rtile.mY = 0;
 					rtile.mWidth = 1;
 					rtile.mHeight = 1;
+					rtile.mon = null;
 				}
 			}
 		}
@@ -257,7 +257,21 @@ public class TileEntityExternalMonitor extends TileEntityMonitor {
 		nbt.setInteger("mX", mX);
 		nbt.setInteger("mY", mY);
 	}
+	
+	@Override
+	public void makeINE()
+	{
+		super.makeINE();
+		this.mon.changed = new Runnable() {
+			
+			@Override
+			public void run() {
+				updateVolume();
+			}
+		};
+	}
 
+	/*
 	@Override
 	public void setOwner(ComponentGX o) {
 		super.setOwner(o);
@@ -268,5 +282,5 @@ public class TileEntityExternalMonitor extends TileEntityMonitor {
 	public void onChanged()
 	{
 		updateVolume();
-	}
+	}*/
 }

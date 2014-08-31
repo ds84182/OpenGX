@@ -4,13 +4,12 @@ import java.util.ArrayList;
 import java.util.Random;
 
 import li.cil.oc.api.network.ManagedEnvironment;
-import ds.mods.opengx.tileentity.TileEntityGX;
-import ds.mods.opengx.tileentity.TileEntityMonitor;
+import ds.mods.opengx.component.ComponentMonitor;
 
 public class MonitorDiscovery {
 	public ManagedEnvironment gx;
 	public long id;
-	public ArrayList<TileEntityMonitor> foundMonitors = new ArrayList<TileEntityMonitor>();
+	public ArrayList<ComponentMonitor> foundMonitors = new ArrayList<ComponentMonitor>();
 	
 	public MonitorDiscovery(ManagedEnvironment managedEnvironment)
 	{
