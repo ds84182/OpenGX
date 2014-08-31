@@ -36,9 +36,10 @@ public class Tier2GX implements IGX {
 	public String additionalInfo;
 	
 	public boolean clear = true;
-	public float cR, cG, cB;
+	public float cR, cG, cB, cA;
 	
 	public boolean requestRender = false;
+	public RunnableRender renderRedirect = null;
 	
 	private void addPolygon(ByteArrayDataInput fifo)
 	{
@@ -94,6 +95,7 @@ public class Tier2GX implements IGX {
 				cR = fifo.readFloat();
 				cG = fifo.readFloat();
 				cB = fifo.readFloat();
+				cA = fifo.readFloat();
 			}
 			else if (b == GX_LOAD_MATRIX)
 			{
@@ -112,6 +114,7 @@ public class Tier2GX implements IGX {
 
 	@Override
 	public void reset() {
+		renderRedirect = null;
 		for (int i=0; i<serverTextures.length; i++)
 		{
 			serverTextures[i] = null;
@@ -121,6 +124,7 @@ public class Tier2GX implements IGX {
 		cR = 0.0F;
 		cG = 0.0F;
 		cB = 0.0F;
+		cA = 1.0F;
 		matrix = new GXMatrix();
 	}
 	
@@ -171,6 +175,11 @@ public class Tier2GX implements IGX {
 	@Override
 	public boolean needsRender() {
 		return requestRender;
+	}
+	
+	public void setRenderRedirect(RunnableRender redir)
+	{
+		renderRedirect = redir;
 	}
 
 	@Override

@@ -8,7 +8,7 @@ import net.minecraft.tileentity.TileEntity;
 
 import org.lwjgl.opengl.GL11;
 
-import ds.mods.opengx.client.RenderToFramebufferOverlay;
+import ds.mods.opengx.client.ClientEvents;
 import ds.mods.opengx.client.RenderUtils;
 import ds.mods.opengx.client.gx.GXFramebuffer;
 import ds.mods.opengx.component.ComponentMonitor;
@@ -29,7 +29,7 @@ public class TileEntityExternalMonitorRenderer extends
 			mon.fb = null;
 			if (mon.isInRenderList)
 			{
-				Iterator<WeakReference<ComponentMonitor>> iter = RenderToFramebufferOverlay.monitors.iterator();
+				Iterator<WeakReference<ComponentMonitor>> iter = ClientEvents.monitors.iterator();
 				while (iter.hasNext())
 				{
 					WeakReference<ComponentMonitor> w = iter.next();
@@ -45,7 +45,7 @@ public class TileEntityExternalMonitorRenderer extends
 		if (!mon.isInRenderList)
 		{
 			mon.isInRenderList = true;
-			RenderToFramebufferOverlay.monitors.add(new WeakReference<ComponentMonitor>(mon));
+			ClientEvents.monitors.add(new WeakReference<ComponentMonitor>(mon));
 		}
 		
 		GL11.glPushMatrix();

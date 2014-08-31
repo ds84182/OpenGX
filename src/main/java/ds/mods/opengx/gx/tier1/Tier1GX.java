@@ -18,18 +18,19 @@ public class Tier1GX implements IGX {
 	public static final int GX_SET_TEXTURE_SLOT = 1;
 	public static final int GX_SET_TEXSLOT_VAR = 2;
 	
-	public static final int GX_UPLOAD_MAP = 3;
-	public static final int GX_SET_MAP_VAR = 4;
-	public static final int GX_CLEAR_MAP = 5;
-	public static final int GX_PLOT_MAP = 6;
-	public static final int GX_FIND_REPLACE_MAP = 7;
+	public static final int GX_ALLOC_MAP = 3;
+	public static final int GX_UPLOAD_MAP = 4;
+	public static final int GX_SET_MAP_VAR = 5;
+	public static final int GX_CLEAR_MAP = 6;
+	public static final int GX_PLOT_MAP = 7;
+	public static final int GX_FIND_REPLACE_MAP = 8;
 	
-	public static final int GX_ADD_SPRITE = 8;
-	public static final int GX_SET_SPRITE_VAR = 9;
-	public static final int GX_REMOVE_SPRITE = 10;
+	public static final int GX_ADD_SPRITE = 9;
+	public static final int GX_SET_SPRITE_VAR = 10;
+	public static final int GX_REMOVE_SPRITE = 11;
 	
-	public static final int GX_DISABLE_CLEAR = 11;
-	public static final int GX_SET_CLEAR_COLOR = 12;
+	public static final int GX_DISABLE_CLEAR = 12;
+	public static final int GX_SET_CLEAR_COLOR = 13;
 
 	public static final int GX_TEXSLOT_VAR_TILESIZE = 0;
 	
@@ -104,9 +105,10 @@ public class Tier1GX implements IGX {
 	public static final int GX_GET_SPRITE_VAR = 4;
 	
 	public boolean clear = true;
-	public float cR, cG, cB;
+	public float cR, cG, cB, cA;
 	
 	public boolean requestRender = false;
+	public RunnableRender renderRedirect = null;
 
 	@Override
 	public void uploadFIFO(ByteArrayDataInput fifo, byte[] fifoData) {
@@ -174,6 +176,19 @@ public class Tier1GX implements IGX {
 					additionalInfo = "Happened during a GX_SET_TEXSLOT_VAR command";
 				return;
 				}
+			}
+			else if (b == GX_ALLOC_MAP)
+			{
+				byte mapid = fifo.readByte();
+				short w = fifo.readShort(), h = fifo.readShort();
+				if (mapid < 0 || mapid >= maps.length)
+				{
+					error = GX_ERROR_MAP_ID_OOR;
+					additionalInfo = "Happened during a GX_ALLOC_MAP command";
+					return;
+				}
+				System.out.println(w+","+h);
+				maps[mapid] = new GXMap(w, h, null);
 			}
 			else if (b == GX_UPLOAD_MAP)
 			{
@@ -417,6 +432,7 @@ public class Tier1GX implements IGX {
 				cR = fifo.readFloat();
 				cG = fifo.readFloat();
 				cB = fifo.readFloat();
+				cA = fifo.readFloat();
 			}
 			else
 			{
@@ -430,6 +446,7 @@ public class Tier1GX implements IGX {
 
 	@Override
 	public void reset() {
+		renderRedirect = null;
 		for (int i=0; i<serverTextures.length; i++)
 		{
 			serverTextures[i] = null;
@@ -453,6 +470,7 @@ public class Tier1GX implements IGX {
 		cR = 0.0F;
 		cG = 0.0F;
 		cB = 0.0F;
+		cA = 1.0F;
 	}
 
 	@Override
@@ -730,5 +748,10 @@ public class Tier1GX implements IGX {
 	@Override
 	public void requestRerender() {
 		requestRender = true;
+	}
+	
+	public void setRenderRedirect(RunnableRender redir)
+	{
+		renderRedirect = redir;
 	}
 }

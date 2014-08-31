@@ -1,5 +1,6 @@
 package ds.mods.opengx.component;
 
+import java.util.HashMap;
 import java.util.UUID;
 import java.util.WeakHashMap;
 
@@ -24,18 +25,22 @@ import net.minecraft.world.World;
 
 public class ComponentMonitor extends Component implements ManagedEnvironment {
 
-	public static final WeakHashMap<UUID,ComponentMonitor> serverCGX = new WeakHashMap<UUID,ComponentMonitor>();
-	public static final WeakHashMap<UUID,ComponentMonitor> clientCGX = new WeakHashMap<UUID,ComponentMonitor>();
+	public static final WeakHashMap<World,HashMap<UUID,ComponentMonitor>> serverCGX = new WeakHashMap<World,HashMap<UUID,ComponentMonitor>>();
+	public static final WeakHashMap<World,HashMap<UUID,ComponentMonitor>> clientCGX = new WeakHashMap<World,HashMap<UUID,ComponentMonitor>>();
 	
 	public static ComponentMonitor get(UUID uuid, World w, int tier)
 	{
-		WeakHashMap<UUID,ComponentMonitor> cgxm = w.isRemote ? clientCGX : serverCGX;
-		if (!cgxm.containsKey(uuid))
+		WeakHashMap<World,HashMap<UUID,ComponentMonitor>> cgxm = w.isRemote ? clientCGX : serverCGX;
+		if (!cgxm.containsKey(w))
 		{
-			System.out.println("Create new cm "+uuid+" "+w.isRemote);
-			cgxm.put(uuid, new ComponentMonitor(uuid, w, tier));
+			cgxm.put(w, new HashMap<UUID,ComponentMonitor>());
 		}
-		return cgxm.get(uuid);
+		HashMap<UUID,ComponentMonitor> m = cgxm.get(w);
+		if (!m.containsKey(uuid))
+		{
+			m.put(uuid, new ComponentMonitor(uuid, w, tier));
+		}
+		return m.get(uuid);
 	}
 	
 	Node node = Network.newNode(this, Visibility.Network).withComponent("gxmonitor").create();
@@ -85,7 +90,8 @@ public class ComponentMonitor extends Component implements ManagedEnvironment {
 
 	@Override
 	public void load(NBTTagCompound nbt) {
-		node.load(nbt);
+		if (node != null)
+			node.load(nbt);
 		width = nbt.getInteger("width");
 		height = nbt.getInteger("height");
 	}

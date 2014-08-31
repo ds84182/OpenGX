@@ -5,8 +5,6 @@ import java.util.ArrayList;
 
 import org.apache.commons.lang3.tuple.Pair;
 
-import net.minecraft.util.Tuple;
-
 import com.google.common.io.ByteArrayDataInput;
 
 
@@ -15,6 +13,7 @@ import com.google.common.io.ByteArrayDataInput;
  * @author ds84182
  *
  */
+
 public interface IGX {
 	public static final int GX_INIT = 0;
 	
@@ -44,6 +43,10 @@ public interface IGX {
 	 * Used by monitors to tell the GPU it needs to request a re render
 	 */
 	public void requestRerender();
+	/**
+	 * Sets a function to redirect all rendering to
+	 */
+	public void setRenderRedirect(RunnableRender redir);
 	/**
 	 * Reset the GX
 	 */
@@ -79,4 +82,11 @@ public interface IGX {
 	enum DataType {
 		FIFO, TEXTURE
 	}
+	
+	public static interface RunnableRender {
+		
+		public void run(int fbwidth, int fbheight);
+		
+	}
 }
+

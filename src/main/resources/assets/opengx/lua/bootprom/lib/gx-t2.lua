@@ -1,9 +1,6 @@
 --GX Tier 2 lua side library--
 return function(gxdev)
-	local component = require "component"
-	local fs = require "filesystem"
 	local gx = {}
-	local gxt1 = require("gx-t1")(gxdev)
 
 	function gx.init()
 		--register global constants--
@@ -276,18 +273,19 @@ return function(gxdev)
 		end
 	end
 
-	function gx.loadTexture(id,file,fmt)
+	function gx.loadTexture(id,file,fmt,fs)
 		checkArg(1, id, "number")
 		checkArg(2, file, "string")
 		checkArg(3, fmt, "number")
+		checkArg(4, fs, "table")
 		local fh = fs.open(file,"rb")
 		local data = ""
-		local t = fh:read(2048)
+		local t = fs.read(fh,2048)
 		while t do
 			data = data..t
-			t = fh:read(2048)
+			t = fs.read(fh,2048)
 		end
-		fh:close()
+		fs.close(fh)
 		gxdev.uploadTexture(id,data,fmt)
 	end
 
@@ -299,7 +297,7 @@ return function(gxdev)
 	end
 
 	function gx.getMonitor()
-		local maddr = gxdev.getMonitorAddress()
+		local maddr = component.invoke(component.list("gx")(),"getMonitorAddress")
 		if not maddr then return nil end
 		return component.proxy(maddr)
 	end

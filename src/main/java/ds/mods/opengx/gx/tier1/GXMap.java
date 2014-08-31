@@ -20,7 +20,10 @@ public class GXMap
 		height = h;
 		data = new short[w*h];
 		color = 0xFFFFFFFF;
-		feed(fifo);
+		if (fifo != null)
+			feed(fifo);
+		else
+			finished = true;
 	}
 
 	public void feed(ByteArrayDataInput fifo) {
@@ -34,11 +37,11 @@ public class GXMap
 
 	public short getTile(short x, short y)
 	{
-		return (short) (data[(y*height)+x]+tileOffset);
+		return (short) (data[(y*width)+x]+tileOffset);
 	}
 	
 	public void setTile(short x, short y, short t)
 	{
-		data[(y*height)+x] = t;
+		data[(y*width)+x] = t;
 	}
 }

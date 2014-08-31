@@ -1,7 +1,5 @@
 --GX Tier 1 lua side library--
 return function(gxdev)
-	local component = require "component"
-	local fs = require "filesystem"
 	local gx = {}
 
 	function gx.init()
@@ -120,18 +118,19 @@ return function(gxdev)
 		gxdev.writeByte(GX_SET_TEXSLOT_VAR, slot, idx, val)
 	end
 
-	function gx.loadTexture(id,file,fmt)
+	function gx.loadTexture(id,file,fmt,fs)
 		checkArg(1, id, "number")
 		checkArg(2, file, "string")
 		checkArg(3, fmt, "number")
+		checkArg(4, fs, "table")
 		local fh = fs.open(file,"rb")
 		local data = ""
-		local t = fh:read(2048)
+		local t = fs.read(fh,2048)
 		while t do
 			data = data..t
-			t = fh:read(2048)
+			t = fs.read(fh,2048)
 		end
-		fh:close()
+		fs.close(fh)
 		gxdev.uploadTexture(id,data,fmt)
 	end
 
@@ -139,6 +138,7 @@ return function(gxdev)
 		checkArg(1, id, "number")
 		checkArg(2, data, "string")
 		checkArg(3, fmt, "number")
+		prom.log("uploading texture")
 		gxdev.uploadTexture(id,data,fmt)
 	end
 	
@@ -231,27 +231,27 @@ return function(gxdev)
 		return type(s) == "string" and s:byte() or s
 	end
 
-	gx.plots = nil
+	local plots = nil
 	function gx.startPlot(mapid)
 		checkArg(1, mapid, "number")
-		gx.plots = {mapid=mapid}
+		plots = {mapid=mapid}
 	end
 	function gx.plot(x,y,t)
-		if not gx.plots then error("Plot not started!") end
+		if plots == nil then error("Plot not started!!",2) end
 		checkArg(1, x, "number")
 		checkArg(2, y, "number")
 		checkArg(3, t, "number", "string")
-		gx.plots[#gx.plots+1] = {x-1,y-1,s2n(t)}
+		plots[#plots+1] = {x-1,y-1,s2n(t)}
 	end
 	function gx.endPlot()
 		--do it just like uploadMap :D
 		local function process()
 			gx.ensureFits(8)
-			if gx.isAvailable(3+(#gx.plots*5)) then
-				gxdev.writeByte(GX_PLOT_MAP,gx.plots.mapid)
-				gxdev.writeShort(#gx.plots)
-				for i=1, #gx.plots do
-					local v = gx.plots[i]
+			if gx.isAvailable(3+(#plots*5)) then
+				gxdev.writeByte(GX_PLOT_MAP,plots.mapid)
+				gxdev.writeShort(#plots)
+				for i=1, #plots do
+					local v = plots[i]
 					gxdev.writeShort(v[1],v[2])
 					gxdev.writeByte(v[3])
 				end
@@ -261,11 +261,11 @@ return function(gxdev)
 				print("Stagger uploading map...")
 				local avail = gxdev.getFifoSize()-gxdev.getFifoUsage()
 				local canUpload = math.floor((avail-3)/5)
-				gxdev.writeByte(GX_PLOT_MAP,gx.plots.mapid)
+				gxdev.writeByte(GX_PLOT_MAP,plots.mapid)
 				gxdev.writeShort(canUpload)
 				local written = 0
 				while written < canUpload do
-					local v = table.remove(gx.plots,1)
+					local v = table.remove(plots,1)
 					gxdev.writeShort(v[1],v[2])
 					gxdev.writeByte(v[3])
 					written = written+1
@@ -275,7 +275,7 @@ return function(gxdev)
 			end
 		end
 		while process() do end
-		gx.plots = nil
+		plots = nil
 	end
 
 	function gx.findReplaceMap(id,...)
@@ -375,7 +375,7 @@ return function(gxdev)
 	end
 
 	function gx.getMonitor()
-		local maddr = gxdev.getMonitorAddress()
+		local maddr = component.invoke(component.list("gx")(),"getMonitorAddress")
 		if not maddr then return nil end
 		return component.proxy(maddr)
 	end
@@ -391,7 +391,7 @@ return function(gxdev)
 
 	function gx.render()
 		gxdev.upload()
-		os.sleep(1/30)
+		--os.sleep(1/30)
 	end
 
 	function gx.dumpFifo()

@@ -41,7 +41,8 @@ public class GuiMonitor extends GuiScreen {
 		if (mon.owner != null && mon.owner.gx != null)
 		{
 			mon.fb.bind();
-			mon.owner.gx.render(mon.width, mon.height);
+			if (mon.owner.gx.needsRender())
+				mon.owner.gx.render(mon.width, mon.height);
 			mon.fb.unbind();
 			GL11.glEnable(GL11.GL_TEXTURE_2D);
 			mon.fb.bindTexture();

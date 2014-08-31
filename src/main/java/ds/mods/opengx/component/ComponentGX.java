@@ -1,12 +1,12 @@
 package ds.mods.opengx.component;
 
 import java.io.ByteArrayInputStream;
+import java.util.HashMap;
 import java.util.UUID;
 import java.util.WeakHashMap;
 
 import li.cil.oc.api.FileSystem;
 import li.cil.oc.api.Network;
-import li.cil.oc.api.machine.Owner;
 import li.cil.oc.api.network.Arguments;
 import li.cil.oc.api.network.Callback;
 import li.cil.oc.api.network.Context;
@@ -27,21 +27,25 @@ import ds.mods.opengx.OpenGX;
 import ds.mods.opengx.gx.IGX;
 import ds.mods.opengx.network.GXFifoUploadMessage;
 import ds.mods.opengx.network.GXTextureUploadMessage;
-import ds.mods.opengx.tileentity.TileEntityMonitor;
 import ds.mods.opengx.util.MonitorDiscovery;
 
 public class ComponentGX extends Component implements ManagedEnvironment {
-	public static final WeakHashMap<UUID,ComponentGX> serverCGX = new WeakHashMap<UUID,ComponentGX>();
-	public static final WeakHashMap<UUID,ComponentGX> clientCGX = new WeakHashMap<UUID,ComponentGX>();
+	public static final WeakHashMap<World,HashMap<UUID,ComponentGX>> serverCGX = new WeakHashMap<World,HashMap<UUID,ComponentGX>>();
+	public static final WeakHashMap<World,HashMap<UUID,ComponentGX>> clientCGX = new WeakHashMap<World,HashMap<UUID,ComponentGX>>();
 	
 	public static ComponentGX get(UUID uuid, World w, int tier)
 	{
-		WeakHashMap<UUID,ComponentGX> cgxm = w.isRemote ? clientCGX : serverCGX;
-		if (!cgxm.containsKey(uuid))
+		WeakHashMap<World,HashMap<UUID,ComponentGX>> cgxm = w.isRemote ? clientCGX : serverCGX;
+		if (!cgxm.containsKey(w))
 		{
-			cgxm.put(uuid, new ComponentGX(uuid, w, tier));
+			cgxm.put(w, new HashMap<UUID,ComponentGX>());
 		}
-		return cgxm.get(uuid);
+		HashMap<UUID,ComponentGX> m = cgxm.get(w);
+		if (!m.containsKey(uuid))
+		{
+			m.put(uuid, new ComponentGX(uuid, w, tier));
+		}
+		return m.get(uuid);
 	}
 	
 	public static final String serverGXFormat = "ds.mods.opengx.gx.tier%d.Tier%dGX";
@@ -152,7 +156,8 @@ public class ComponentGX extends Component implements ManagedEnvironment {
 
 	@Override
 	public void load(NBTTagCompound nbt) {
-		node.load(nbt);
+		if (node != null)
+			node.load(nbt);
 		tier = nbt.getInteger("tier")+1;
 		monitorAddress = nbt.getString("monitor");
 		if (monitorAddress.length() == 0)

@@ -49,6 +49,12 @@ public class ClientTier1GX extends Tier1GX {
 	
 	@Override
 	public void render(int fbwidth, int fbheight) {
+		if (renderRedirect != null)
+		{
+			renderRedirect.run(fbwidth,fbheight);
+			return;
+		}
+		
 		if (error < 0)
 		{
 			//display error
@@ -70,7 +76,7 @@ public class ClientTier1GX extends Tier1GX {
 		{
 			if (clear)
 			{
-				GL11.glClearColor(cR, cG, cB, 1.0f);
+				GL11.glClearColor(cR, cG, cB, cA);
 				GL11.glClear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT); // Clear Screen And Depth Buffer on the fbo to red
 			}
 			renderMap(fbwidth,fbheight,0);
