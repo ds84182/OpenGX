@@ -9,9 +9,11 @@ buildscript {
             name = "sonatype"
             url = "https://oss.sonatype.org/content/repositories/snapshots/"
         }
+		
     }
     dependencies {
         classpath 'net.minecraftforge.gradle:ForgeGradle:1.2-SNAPSHOT'
+		//compile group: 'li.cil.oc', name: 'OpenComputers', version: 'MC1.7.10-1.3.4.120-dev-api'
     }
 }
 
@@ -26,18 +28,20 @@ version = "0.0.0"
 group = "ds.mods.opengx"
 archivesBaseName = "OpenGX"
 
+repositories {
+	maven { url = "http://maven.cil.li/" }
+}
+
+dependencies {
+	compile 'li.cil.oc:OpenComputers:MC1.7.10-1.3.4.120-dev'
+}
+
 minecraft {
 	version = "1.7.10-10.13.0.1180"
 	replace "@VERSION@", project.version
 	replace "@BUILD@", project.ext.buildNumber
 }
 version = "${version}.${project.ext.buildNumber}"
-sourceSets.main.java.srcDir("./src/externs/java")
-
-jar.doFirst {
-	for (String s : new File("./src/externs/java").list())
-		delete new File(sourceSets.main.output.classesDir, s);
-}
 
 //jar.classifier = "${ext.buildNumber}"
 
