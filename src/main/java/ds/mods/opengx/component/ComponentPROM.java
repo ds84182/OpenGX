@@ -1,5 +1,6 @@
 package ds.mods.opengx.component;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.UUID;
 import java.util.WeakHashMap;
@@ -36,7 +37,7 @@ public class ComponentPROM extends Component implements ManagedEnvironment {
 	}
 	
 	Node node = Network.newNode(this, Visibility.Neighbors).withComponent("prom").create();
-	String prom = "";
+	byte[] prom = new byte[0];
 	
 	public ComponentPROM(UUID uui, World world, int t) {
 		super(uui, world, t);
@@ -66,15 +67,19 @@ public class ComponentPROM extends Component implements ManagedEnvironment {
 	public void load(NBTTagCompound nbt) {
 		if (node != null)
 			node.load(nbt);
-		prom = nbt.getString("prom");
-		System.err.println("loaded "+prom.length()+" bytes from nbt "+prom);
+		prom = nbt.getByteArray("data");
+		System.err.println("loaded "+prom.length+" bytes from nbt "+prom);
 	}
 
 	@Override
 	public void save(NBTTagCompound nbt) {
 		node.save(nbt);
-		nbt.setString("prom", prom);
-		System.err.println("saved "+prom.length()+" bytes to nbt");
+		nbt.setByteArray("data", prom);
+		System.err.println("saved "+prom.length+" bytes to nbt");
+		if (nbt != saveUpper && saveUpper != null)
+		{
+			save(saveUpper);
+		}
 	}
 
 	@Override
@@ -94,10 +99,29 @@ public class ComponentPROM extends Component implements ManagedEnvironment {
 	}
 	
 	@Callback(direct=true)
+	public Object[] read(Context context, Arguments arguments)
+	{
+		int index = arguments.checkInteger(0);
+		if (index<1) throw new RuntimeException("Index < 1");
+		if (index>prom.length) throw new RuntimeException("Index > "+prom.length);
+		index--;
+		int n = arguments.checkInteger(1);
+		if (n<1) throw new RuntimeException("N < 1");
+		if (index+n>prom.length) n = prom.length-index;
+		return new Object[]{Arrays.copyOfRange(prom, index, index+n)};
+	}
+	
+	@Callback(direct=true)
+	public Object[] size(Context context, Arguments arguments)
+	{
+		return new Object[]{prom.length};
+	}
+	
+	@Callback(direct=true)
 	public Object[] set(Context context, Arguments arguments)
 	{
-		String nprom = arguments.checkString(0);
-		if (nprom.length() > 16384) throw new RuntimeException("attempt to write "+nprom.length()+" bytes (limit 16384)");
+		byte[] nprom = arguments.checkByteArray(0);
+		if (nprom.length > 16384) throw new RuntimeException("attempt to write "+nprom.length+" bytes (limit 16384)");
 		prom = nprom;
 		return null;
 	}

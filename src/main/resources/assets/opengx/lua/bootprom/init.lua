@@ -1,16 +1,20 @@
 --This file sets up the environment, and boots the PROM--
 bootfs = component.proxy(computer.getBootAddress())
-tmpfs = computer.getTmpAddress() and component.proxy(computer.getTmpAddress())
+defaultfs = bootfs
+tmpfs = computer.tmpAddress() and component.proxy(computer.tmpAddress())
+modem = component.list("modem")()
+if modem then modem = component.proxy(modem) end
+buttons = component.proxy(component.list("buttons")())
 
 function loadfile(file,...)
-	local fh = bootfs.open(file,"r")
+	local fh = defaultfs.open(file,"r")
 	local data = ""
-	local t = bootfs.read(fh,2048)
+	local t = defaultfs.read(fh,2048)
 	while t do
 		data = data..t
-		t = bootfs.read(fh,2048)
+		t = defaultfs.read(fh,2048)
 	end
-	bootfs.close(fh)
+	defaultfs.close(fh)
 	return load(data,...)
 end
 
@@ -30,15 +34,92 @@ prom = component.proxy(promaddr)
 
 --load the gx library--
 gx = dofile("lib/gx.lua")
-term = dofile("lib/term.lua")
+term = dofile("lib/term-t"..gx.getTier()..".lua")
+nc = dofile("lib/netcerial.lua")
 
-local promdata = prom.get()
---attempt to find argument data--
-local code, edat = promdata
-if promdata:find("\0") then
-	local s = promdata:find("\0")
-	code = promdata:sub(1,s-1)
-	edat = promdata:sub(s+1)
+if buttons.isDown "actionmod" then
+	--enter netflash mode!--
+	term.init()
+	term.resolution(36, 16)
+	term.write("Netflash Started")
+	term.cursor(1,2)
+	term.write("Modem Address: ")
+	term.cursor(1,3)
+	term.write(modem.address)
+	local port = math.random(1,8192)
+	term.cursor(1,4)
+	term.write("Port: "..port)
+	term.update()
+	modem.open(port)
+	local flashing = false
+	local size = math.huge
+	local recv = 0
+	local from
+	local data = {}
+	while recv<size do
+		local event, la, ra, p, dist, message, a, b, c = computer.pullSignal()
+		if event == "modem_message" then
+			if (not flashing) and message == "flash" then
+				flashing = true
+				term.clear()
+				term.cursor(1,1)
+				term.write("Flashing...")
+				term.cursor(1,2)
+				term.write("Remote: ")
+				term.cursor(1,3)
+				term.write(ra)
+				term.update()
+				from = ra
+			elseif ra == from then
+				if message == "size" then
+					size = a
+					term.cursor(1,4)
+					term.write("Size: "..size)
+					term.update()
+				elseif message == "data" then
+					data[#data+1] = a
+					recv = recv+#a
+					term.cursor(1,5)
+					term.write("Recv: "..recv)
+					term.update()
+				end
+			end
+		end
+	end
+	term.cursor(1,6)
+	term.write("Download complete")
+	term.cursor(1,7)
+	term.write("Flashing...")
+	term.update()
+	prom.set(table.concat(data))
+	term.cursor(1,8)
+	term.write("Press any button to reboot")
+	term.update()
+	--we reboot because of potential memory problems this can cause--
+	while true do
+		local event, b = computer.pullSignal()
+		if event == "button" then
+			computer.shutdown(true)
+		end
+	end
 end
 
-assert(load(code))(edat)
+--load data from prom--
+local code, dataidx = {}
+local idx = 1
+while idx<=prom.size() do
+	--load in chunks, scan chunks for \0
+	local chunk = assert(prom.read(idx, 64))
+	if chunk:find("\0") then
+		--it does contain a null!--
+		chunk = chunk:sub(1,chunk:find("\0"))
+		idx = idx+#chunk+1
+		dataidx = idx
+		break
+	else
+		idx = idx+#chunk
+	end
+	code[#code+1] = chunk
+end
+
+assert(load(table.concat(code)))(dataidx)

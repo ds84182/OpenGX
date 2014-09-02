@@ -4,14 +4,6 @@ import java.util.HashMap;
 import java.util.UUID;
 import java.util.WeakHashMap;
 
-import cpw.mods.fml.common.network.NetworkRegistry.TargetPoint;
-import cpw.mods.fml.relauncher.Side;
-import cpw.mods.fml.relauncher.SideOnly;
-import ds.mods.opengx.OpenGX;
-import ds.mods.opengx.client.gx.GXFramebuffer;
-import ds.mods.opengx.network.MonitorOwnMessage;
-import ds.mods.opengx.network.MonitorSizeMessage;
-import ds.mods.opengx.util.MonitorDiscovery;
 import li.cil.oc.api.Network;
 import li.cil.oc.api.network.Arguments;
 import li.cil.oc.api.network.Callback;
@@ -22,6 +14,14 @@ import li.cil.oc.api.network.Node;
 import li.cil.oc.api.network.Visibility;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.world.World;
+import cpw.mods.fml.common.network.NetworkRegistry.TargetPoint;
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
+import ds.mods.opengx.OpenGX;
+import ds.mods.opengx.client.gx.GXFramebuffer;
+import ds.mods.opengx.network.MonitorOwnMessage;
+import ds.mods.opengx.network.MonitorSizeMessage;
+import ds.mods.opengx.util.MonitorDiscovery;
 
 public class ComponentMonitor extends Component implements ManagedEnvironment {
 
@@ -94,6 +94,7 @@ public class ComponentMonitor extends Component implements ManagedEnvironment {
 			node.load(nbt);
 		width = nbt.getInteger("width");
 		height = nbt.getInteger("height");
+		onChanged();
 	}
 
 	@Override
@@ -146,6 +147,7 @@ public class ComponentMonitor extends Component implements ManagedEnvironment {
 	
 	public void onChanged()
 	{
+		countdown = 0;
 		if (changed != null)
 			changed.run();
 	}
@@ -156,7 +158,7 @@ public class ComponentMonitor extends Component implements ManagedEnvironment {
 		return new Object[]{width, height};
 	}
 	
-	@Callback(direct=true,limit=1)
+	@Callback(limit=1)
 	public Object[] setSize(Context context, Arguments arguments)
 	{
 		int w = arguments.checkInteger(0), h = arguments.checkInteger(1);

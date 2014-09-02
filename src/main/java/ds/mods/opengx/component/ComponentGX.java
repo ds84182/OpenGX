@@ -51,7 +51,7 @@ public class ComponentGX extends Component implements ManagedEnvironment {
 	public static final String serverGXFormat = "ds.mods.opengx.gx.tier%d.Tier%dGX";
 	public static final String clientGXFormat = "ds.mods.opengx.client.gx.tier%d.ClientTier%dGX";
 	
-	Node node = Network.newNode(this, Visibility.Neighbors).withComponent("gx").create();
+	Node node = Network.newNode(this, Visibility.Network).withComponent("gx").create();
 	ManagedEnvironment romGX = FileSystem.asManagedEnvironment(FileSystem.fromClass(OpenGX.class, "opengx", "lua/component/gx"), "gx");
 
 	public IGX gx;

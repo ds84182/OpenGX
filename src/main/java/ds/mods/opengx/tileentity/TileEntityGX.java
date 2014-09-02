@@ -142,8 +142,8 @@ public class TileEntityGX extends TileEntityEnvironment {
 				
 			};
 		}
-		component.update();
 		super.updateEntity();
+		component.update();
 		if (metadataUpdateCountdown-- == 0)
 		{
 			metadataUpdateCountdown = 100;

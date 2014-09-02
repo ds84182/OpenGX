@@ -7,6 +7,7 @@ function term.init()
 	if gx.getTier() == 1 then
 		while not gx.getMonitor() do computer.pushSignal("sig") computer.pullSignal() end --wait for the gx to connect to the monitor
 		gx.init()
+		gx.setClearColor(0,0,0,196) --Glasses standard: Transparent UI
 		gx.loadTexture(GX_TEXID1, "lib/gx/font.gxt", GX_FMT_BASE85, bootfs)
 		term.initMap()
 		term.initCursor()
@@ -65,11 +66,11 @@ function term.cursor(nx,ny)
 end
 
 function term.write(str)
+	str = tostring(str)
 	local w, h = term.resolution()
 	gx.startPlot(GX_MAP1)
 	for c in str:gmatch(".") do
 		gx.plot(x,y,c)
-		prom.log(x..", "..y.." "..c)
 		x = x+1
 		if x>w then x = 1 y = y+1 end
 		if y>h then break end

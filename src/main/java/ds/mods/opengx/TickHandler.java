@@ -6,11 +6,8 @@ import cpw.mods.fml.common.gameevent.TickEvent.Type;
 
 public class TickHandler {
 	@SubscribeEvent
-	public void tick(TickEvent ev)
+	public void tick(TickEvent.ServerTickEvent ev)
 	{
-		if (ev.type == Type.CLIENT || ev.type == Type.SERVER)
-		{
-			Glasses.updateAll();
-		}
+		Glasses.updateAll();
 	}
 }

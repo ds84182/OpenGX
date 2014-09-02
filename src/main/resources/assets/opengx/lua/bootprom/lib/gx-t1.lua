@@ -122,15 +122,17 @@ return function(gxdev)
 		checkArg(1, id, "number")
 		checkArg(2, file, "string")
 		checkArg(3, fmt, "number")
+		local rfs = fs == nil and require
+		fs = fs or (require and require "filesystem" or defaultfs)
 		checkArg(4, fs, "table")
 		local fh = fs.open(file,"rb")
 		local data = ""
-		local t = fs.read(fh,2048)
+		local t = (rfs and fh.read or fs.read)(fh,2048)
 		while t do
 			data = data..t
-			t = fs.read(fh,2048)
+			t = (rfs and fh.read or fs.read)(fh,2048)
 		end
-		fs.close(fh)
+		(rfs and fh.close or fs.close)(fh)
 		gxdev.uploadTexture(id,data,fmt)
 	end
 
@@ -138,7 +140,6 @@ return function(gxdev)
 		checkArg(1, id, "number")
 		checkArg(2, data, "string")
 		checkArg(3, fmt, "number")
-		prom.log("uploading texture")
 		gxdev.uploadTexture(id,data,fmt)
 	end
 	

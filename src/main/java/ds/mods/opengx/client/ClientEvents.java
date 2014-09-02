@@ -1,11 +1,17 @@
 package ds.mods.opengx.client;
 
+import static ds.mods.opengx.client.Keybindings.buttonMap;
+import static ds.mods.opengx.client.Keybindings.buttonPressStart;
+import static ds.mods.opengx.client.Keybindings.buttonSet;
+
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.UUID;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.item.ItemStack;
+import net.minecraftforge.client.event.GuiOpenEvent;
 import net.minecraftforge.client.event.RenderGameOverlayEvent;
 import net.minecraftforge.client.event.RenderGameOverlayEvent.ElementType;
 
@@ -15,6 +21,7 @@ import org.lwjgl.opengl.GL11;
 
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import cpw.mods.fml.common.gameevent.TickEvent;
+import cpw.mods.fml.common.gameevent.TickEvent.Type;
 import ds.mods.opengx.Glasses;
 import ds.mods.opengx.OpenGX;
 import ds.mods.opengx.client.gx.GXFramebuffer;
@@ -22,7 +29,6 @@ import ds.mods.opengx.component.ComponentMonitor;
 import ds.mods.opengx.items.ItemGlasses;
 import ds.mods.opengx.network.GlassesButtonEventMessage;
 import ds.mods.opengx.network.GlassesButtonEventMessage.Button;
-import static ds.mods.opengx.client.Keybindings.*;
 
 public class ClientEvents {
 	public static ArrayList<WeakReference<ComponentMonitor>> monitors = new ArrayList<WeakReference<ComponentMonitor>>();
@@ -56,18 +62,18 @@ public class ClientEvents {
 	@SubscribeEvent
 	public void renderGlassesOverlay(RenderGameOverlayEvent.Pre event)
 	{
-		if (event.type != ElementType.ALL) return;
+		if (event.type != ElementType.CROSSHAIRS) return;
 		ItemStack armor = Minecraft.getMinecraft().thePlayer.getCurrentArmor(3);
 		if (armor != null && armor.getItem() == OpenGX.iGlasses)
 		{
 			//render the framebuffer!
-			Glasses g = ItemGlasses.getGlasses(Minecraft.getMinecraft().thePlayer, armor);
+			Glasses g = Glasses.get(new UUID(armor.stackTagCompound.getLong("msb"),armor.stackTagCompound.getLong("lsb")), Minecraft.getMinecraft().theWorld);
 			if (g == null)
 			{
-				System.out.println("glasses object null");
 				return;
 			}
 			if (!g.screenOn) return;
+			event.setCanceled(true);
 			ComponentMonitor mon = g.monitor;
 			if (mon.width <= 0 || mon.height <= 0)
 			{
@@ -114,8 +120,9 @@ public class ClientEvents {
 	}
 	
 	@SubscribeEvent
-	public void clientTick(TickEvent.RenderTickEvent ev)
+	public void guiOpened(GuiOpenEvent ev)
 	{
+		//reset all keys
 		Glasses g = null;
 		if (Minecraft.getMinecraft().thePlayer != null)
 		{
@@ -131,32 +138,73 @@ public class ClientEvents {
 			if (buttonMap.get(b) == null) continue;
 			if (buttonSet.contains(b))
 			{
-				//check if released
-				if (!Keyboard.isKeyDown(buttonMap.get(b).getKeyCode()))
+				buttonSet.remove(b);
+				int duration = (int) (System.currentTimeMillis()-buttonPressStart.get(b));
+				
+				GlassesButtonEventMessage gbem = new GlassesButtonEventMessage();
+				gbem.button = b;
+				gbem.released = true;
+				gbem.duration = duration;
+				if (g != null) g.key(gbem);
+				OpenGX.network.sendToServer(gbem);
+			}
+		}
+	}
+	
+	@SubscribeEvent
+	public void clientWorldTick(TickEvent.ClientTickEvent ev)
+	{
+		if (!Minecraft.getMinecraft().isGamePaused())
+			Glasses.updateAll();
+	}
+	
+	@SubscribeEvent
+	public void clientTick(TickEvent.RenderTickEvent ev)
+	{
+		if (Minecraft.getMinecraft().inGameHasFocus)
+		{
+			Glasses g = null;
+			if (Minecraft.getMinecraft().thePlayer != null)
+			{
+				ItemStack armor = Minecraft.getMinecraft().thePlayer.getCurrentArmor(3);
+				if (armor != null && armor.getItem() == OpenGX.iGlasses)
 				{
-					buttonSet.remove(b);
-					int duration = (int) (System.currentTimeMillis()-buttonPressStart.get(b));
-					
-					GlassesButtonEventMessage gbem = new GlassesButtonEventMessage();
-					gbem.button = b;
-					gbem.released = true;
-					gbem.duration = duration;
-					if (g != null) g.key(gbem);
-					OpenGX.network.sendToServer(gbem);
+					g = ItemGlasses.getGlasses(Minecraft.getMinecraft().thePlayer, armor);
 				}
 			}
-			else
+			
+			for (Button b : Button.values())
 			{
-				if (Keyboard.isKeyDown(buttonMap.get(b).getKeyCode()) && !buttonSet.contains(b))
+				if (buttonMap.get(b) == null) continue;
+				if (buttonSet.contains(b))
 				{
-					buttonSet.add(b);
-					buttonPressStart.put(b, System.currentTimeMillis());
-					
-					GlassesButtonEventMessage gbem = new GlassesButtonEventMessage();
-					gbem.button = b;
-					gbem.released = false;
-					if (g != null) g.key(gbem);
-					OpenGX.network.sendToServer(gbem);
+					//check if released
+					if (!Keyboard.isKeyDown(buttonMap.get(b).getKeyCode()))
+					{
+						buttonSet.remove(b);
+						int duration = (int) (System.currentTimeMillis()-buttonPressStart.get(b));
+						
+						GlassesButtonEventMessage gbem = new GlassesButtonEventMessage();
+						gbem.button = b;
+						gbem.released = true;
+						gbem.duration = duration;
+						if (g != null) g.key(gbem);
+						OpenGX.network.sendToServer(gbem);
+					}
+				}
+				else
+				{
+					if (Keyboard.isKeyDown(buttonMap.get(b).getKeyCode()) && !buttonSet.contains(b))
+					{
+						buttonSet.add(b);
+						buttonPressStart.put(b, System.currentTimeMillis());
+						
+						GlassesButtonEventMessage gbem = new GlassesButtonEventMessage();
+						gbem.button = b;
+						gbem.released = false;
+						if (g != null) g.key(gbem);
+						OpenGX.network.sendToServer(gbem);
+					}
 				}
 			}
 		}

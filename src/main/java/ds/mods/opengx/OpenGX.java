@@ -26,6 +26,7 @@ import cpw.mods.fml.relauncher.Side;
 import ds.mods.opengx.blocks.BlockExternalMonitor;
 import ds.mods.opengx.blocks.BlockGX;
 import ds.mods.opengx.blocks.BlockMonitor;
+import ds.mods.opengx.component.ComponentPROM;
 import ds.mods.opengx.items.ItemGlasses;
 import ds.mods.opengx.network.GXFifoUploadMessage;
 import ds.mods.opengx.network.GXFifoUploadMessageHandler;
@@ -121,9 +122,7 @@ public class OpenGX {
 			@Override
 			public ManagedEnvironment createEnvironment(ItemStack stack,
 					Container container) {
-				Glasses g = Glasses.get(new UUID(stack.stackTagCompound.getLong("msb"),stack.stackTagCompound.getLong("lsb")), container.world());
-				if (g == null) return null;
-				return g.prom;
+				return new ComponentPROM(UUID.randomUUID(), container.world(), 0);
 			}
 
 			@Override

@@ -120,18 +120,21 @@ return function(gxdev)
 		gxdev.writeByte(GX_SET_TEXSLOT_VAR, slot, idx, val)
 	end
 
-	function gx.loadTexture(id,file,fmt)
+	function gx.loadTexture(id,file,fmt,fs)
 		checkArg(1, id, "number")
 		checkArg(2, file, "string")
 		checkArg(3, fmt, "number")
+		local rfs = fs == nil and require
+		fs = fs or (require and require "filesystem" or defaultfs)
+		checkArg(4, fs, "table")
 		local fh = fs.open(file,"rb")
 		local data = ""
-		local t = fh:read(2048)
+		local t = (rfs and fh.read or fs.read)(fh,2048)
 		while t do
 			data = data..t
-			t = fh:read(2048)
+			t = (rfs and fh.read or fs.read)(fh,2048)
 		end
-		fh:close()
+		(rfs and fh.close or fs.close)(fh)
 		gxdev.uploadTexture(id,data,fmt)
 	end
 
