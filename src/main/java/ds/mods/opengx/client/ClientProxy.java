@@ -1,5 +1,8 @@
 package ds.mods.opengx.client;
 
+import net.minecraft.client.Minecraft;
+import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.world.World;
 import net.minecraftforge.common.MinecraftForge;
 import cpw.mods.fml.client.registry.ClientRegistry;
 import cpw.mods.fml.common.FMLCommonHandler;
@@ -18,4 +21,7 @@ public class ClientProxy extends CommonProxy {
 		ClientRegistry.bindTileEntitySpecialRenderer(TileEntityExternalMonitor.class, new TileEntityExternalMonitorRenderer());
 		Keybindings.init();
 	}
+	
+	public World getClientWorld() {return Minecraft.getMinecraft().theWorld;}
+	public EntityPlayer getClientPlayer() {return Minecraft.getMinecraft().thePlayer;}
 }

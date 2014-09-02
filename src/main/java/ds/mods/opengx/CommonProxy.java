@@ -8,6 +8,8 @@ import cpw.mods.fml.common.network.IGuiHandler;
 public class CommonProxy implements IGuiHandler {
 
 	public void registerRenderers() {}
+	public World getClientWorld() {return null;}
+	public EntityPlayer getClientPlayer() {return null;}
 
 	@Override
 	public Object getServerGuiElement(int ID, EntityPlayer player, World world,
@@ -17,16 +19,6 @@ public class CommonProxy implements IGuiHandler {
 
 	@Override
 	public Object getClientGuiElement(int ID, EntityPlayer player, World world, int x, int y, int z) {
-        TileEntity te = world.getTileEntity(x, y, z);
-        /*if (te != null && te instanceof PrinterTE)
-        {
-            PrinterTE icte = (PrinterTE) te;
-            return new PrinterContainer(player.inventory, icte);
-        }
-        else
-        {
-            return null;
-        }*/
-        return null;
+		return null;
 	}
 }
