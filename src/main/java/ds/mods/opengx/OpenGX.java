@@ -2,12 +2,17 @@ package ds.mods.opengx;
 
 import java.util.UUID;
 
+import li.cil.oc.OpenComputers;
+import li.cil.oc.OpenComputersCore;
 import li.cil.oc.api.Driver;
+import li.cil.oc.api.detail.ItemAPI;
 import li.cil.oc.api.driver.Container;
 import li.cil.oc.api.driver.Slot;
 import li.cil.oc.api.network.ManagedEnvironment;
 import net.minecraft.block.material.Material;
 import net.minecraft.creativetab.CreativeTabs;
+import net.minecraft.init.Blocks;
+import net.minecraft.init.Items;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
@@ -107,6 +112,31 @@ public class OpenGX {
 		
 		NetworkRegistry.INSTANCE.registerGuiHandler(this, new GuiHandler());
 		MinecraftForge.EVENT_BUS.register(new Events());
+		
+		//TODO: Harder recipes
+		GameRegistry.addShapedRecipe(new ItemStack(bMonitor), "clc", "rgb", "clc",
+				'c', Blocks.glass,
+				'l', Blocks.redstone_lamp,
+				'r', new ItemStack(Blocks.stained_glass, 1, 14),
+				'g', new ItemStack(Blocks.stained_glass, 1, 13),
+				'b', new ItemStack(Blocks.stained_glass, 1, 11)
+		);
+		
+		GameRegistry.addShapedRecipe(new ItemStack(bGX), "scs", "rgb", "scs",
+				'c', li.cil.oc.api.Items.get("printedCircuitBoard").createItemStack(1),
+				's', Blocks.stone,
+				'r', new ItemStack(Blocks.stained_glass, 1, 14),
+				'g', new ItemStack(Blocks.stained_glass, 1, 13),
+				'b', new ItemStack(Blocks.stained_glass, 1, 11)
+		);
+		
+		GameRegistry.addShapedRecipe(new ItemStack(iGlasses), "srs", "bgb", "scs",
+				'c', li.cil.oc.api.Items.get("cpu1").createItemStack(1),
+				's', new ItemStack(Blocks.stained_glass, 1, 15),
+				'g', bGX,
+				'b', li.cil.oc.api.Items.get("buttonGroup").createItemStack(1),
+				'r', li.cil.oc.api.Items.get("ram1").createItemStack(1)
+		);
 		
 		proxy.registerRenderers();
 		

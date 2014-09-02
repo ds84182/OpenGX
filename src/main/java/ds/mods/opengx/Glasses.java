@@ -115,6 +115,7 @@ public class Glasses implements Owner, Container {
 		prom = ComponentPROM.get(UUID.randomUUID(), h.worldObj, 0);
 		prombooter = FileSystem.asManagedEnvironment(FileSystem.fromClass(OpenGX.class, "opengx", "lua/bootprom"), "prombooter");
 		networkCard = new WirelessNetworkCard(this);
+		monitor.onChanged();
 
 		loadDataFromNBT();
 
@@ -315,7 +316,7 @@ public class Glasses implements Owner, Container {
 
 	@Override
 	public int installedMemory() {
-		return 128000;
+		return 196000;
 	}
 
 	@Override
@@ -383,6 +384,7 @@ public class Glasses implements Owner, Container {
 					if (machine.isRunning())
 						machine.stop();
 					machine.start();
+					handledError = false;
 				}
 			}
 			break;

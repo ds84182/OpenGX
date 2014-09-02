@@ -134,6 +134,8 @@ public class ComponentMonitor extends Component implements ManagedEnvironment {
 
 	@Override
 	public void update() {
+		if (width<=0) width=128;
+		if (height<=0) height=96;
 		if (countdown-- == 0)
 		{
 			countdown = 100;

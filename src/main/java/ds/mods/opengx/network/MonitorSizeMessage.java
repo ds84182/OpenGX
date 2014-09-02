@@ -14,7 +14,9 @@ public class MonitorSizeMessage implements IMessage {
 	public void fromBytes(ByteBuf buf) {
 		uuid = new UUID(buf.readLong(), buf.readLong());
 		w = buf.readInt();
+		if (w<=0) w=128;
 		h = buf.readInt();
+		if (h<=0) h=96;
 	}
 
 	@Override

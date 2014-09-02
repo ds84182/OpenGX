@@ -84,7 +84,6 @@ public class ComponentGX extends Component implements ManagedEnvironment {
 		fifo = ByteStreams.newDataOutput(fifoSize);
 		
 		initd = true;
-		//TODO: Send client packet to create GX for client
 	}
 
 	@Override
