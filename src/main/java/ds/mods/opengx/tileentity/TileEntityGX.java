@@ -148,6 +148,7 @@ public class TileEntityGX extends TileEntityEnvironment {
 		{
 			metadataUpdateCountdown = 100;
 			tier = this.getBlockMetadata()+1;
+			component.tier = tier;
 		}
 	}
 	

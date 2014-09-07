@@ -77,6 +77,7 @@ return function(gxdev)
 		GX_SPRITE_VAR_XYIXIYWH = 10;
 		GX_SPRITE_VAR_COLOR = 11;
 		GX_SPRITE_VAR_TEX = 12;
+		GX_SPRITE_VAR_MCTEX = 13;
 	
 		--error codes--
 		GX_ERROR_NONE = 0;
@@ -368,6 +369,10 @@ return function(gxdev)
 			checkArg(3, a, "number")
 			gxdev.writeByte(GX_SET_SPRITE_VAR,id-1,idx)
 			gxdev.writeByte(a)
+		elseif idx == GX_SPRITE_VAR_MCTEX then
+			checkArg(3, a, "string")
+			gxdev.writeByte(GX_SET_SPRITE_VAR,id-1,idx,#a)
+			gxdev.writeBytes(a)
 		end
 	end
 

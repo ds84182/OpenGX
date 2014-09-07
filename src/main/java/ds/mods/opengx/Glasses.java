@@ -28,6 +28,7 @@ import ds.mods.opengx.component.ComponentButton;
 import ds.mods.opengx.component.ComponentGX;
 import ds.mods.opengx.component.ComponentMonitor;
 import ds.mods.opengx.component.ComponentPROM;
+import ds.mods.opengx.component.ComponentSensor;
 import ds.mods.opengx.network.GlassesButtonEventMessage;
 import ds.mods.opengx.network.GlassesComponentUUIDMessage;
 import ds.mods.opengx.network.GlassesErrorMessage;
@@ -86,6 +87,7 @@ public class Glasses implements Owner, Container {
 	public ItemStack stack;
 	public UUID uuid = UUID.randomUUID();
 
+	public ComponentSensor sensors;
 	public ComponentButton buttons;
 	public ComponentGX gx;
 	public ComponentMonitor monitor;
@@ -109,6 +111,7 @@ public class Glasses implements Owner, Container {
 		NBTTagCompound nbt = stack.getTagCompound();
 		uuid = new UUID(nbt.getLong("msb"), nbt.getLong("lsb"));
 
+		sensors = ComponentSensor.get(UUID.randomUUID(), h.worldObj, 0);
 		buttons = ComponentButton.get(UUID.randomUUID(), h.worldObj, 0);
 		gx = ComponentGX.get(UUID.randomUUID(), h.worldObj, 1);
 		monitor = ComponentMonitor.get(UUID.randomUUID(), h.worldObj, 0);
@@ -124,6 +127,7 @@ public class Glasses implements Owner, Container {
 			machine = Machine.create(this, Machine.LuaArchitecture);
 			Network.joinNewNetwork(machine.node());
 
+			machine.node().network().connect(machine.node(), sensors.node());
 			machine.node().network().connect(machine.node(), buttons.node());
 			machine.node().network().connect(machine.node(), gx.node());
 			machine.node().network().connect(machine.node(), monitor.node());
@@ -141,6 +145,7 @@ public class Glasses implements Owner, Container {
 	{
 		NBTTagCompound nbt = stack.getTagCompound();
 
+		sensors.load(nbt.getCompoundTag("sensors"));
 		buttons.load(nbt.getCompoundTag("buttons"));
 		gx.load(nbt.getCompoundTag("gx"));
 		monitor.load(nbt.getCompoundTag("monitor"));
@@ -153,6 +158,7 @@ public class Glasses implements Owner, Container {
 
 	public void fixOwnership()
 	{
+		sensors.own = this;
 		buttons.own = this;
 		gx.own = this;
 		monitor.own = this;
@@ -197,6 +203,12 @@ public class Glasses implements Owner, Container {
 					NBTTagCompound nbt = new NBTTagCompound();
 					machine.node().save(nbt);
 					stack.getTagCompound().setTag("node", nbt);
+				}
+				
+				{
+					NBTTagCompound nbt = new NBTTagCompound();
+					sensors.save(nbt);
+					stack.getTagCompound().setTag("sensors", nbt);
 				}
 
 				{

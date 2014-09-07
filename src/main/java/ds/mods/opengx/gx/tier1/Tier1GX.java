@@ -52,6 +52,7 @@ public class Tier1GX implements IGX {
 	public static final int GX_SPRITE_VAR_XYIXIYWH = 10;
 	public static final int GX_SPRITE_VAR_COLOR = 11;
 	public static final int GX_SPRITE_VAR_TEX = 12;
+	public static final int GX_SPRITE_VAR_MCTEX = 13;
 
 	public GXServerTexture[] serverTextures = new GXServerTexture[16];
 	public GXTextureSlot[] textureSlots = new GXTextureSlot[4];
@@ -128,8 +129,6 @@ public class Tier1GX implements IGX {
 			if (b == GX_INIT)
 			{
 				System.out.println("GX_INIT");
-				error = 0;
-				additionalInfo = null;
 				reset();
 			}
 			else if(b == GX_SET_TEXTURE_SLOT)
@@ -410,6 +409,17 @@ public class Tier1GX implements IGX {
 					}
 					sprite.tex = tex;
 				}
+				else if (idx == GX_SPRITE_VAR_MCTEX)
+				{
+					byte len = fifo.readByte();
+					byte[] data = new byte[len];
+					fifo.readFully(data);
+					sprite.mctex = new String(data);
+					if (sprite.mctex.startsWith("minecraft:"))
+					{
+						sprite.mctex = sprite.mctex.substring(10); //so people won't have that stupid ass namespace error
+					}
+				}
 			}
 			else if (b == GX_REMOVE_SPRITE)
 			{
@@ -446,6 +456,8 @@ public class Tier1GX implements IGX {
 
 	@Override
 	public void reset() {
+		error = 0;
+		additionalInfo = null;
 		renderRedirect = null;
 		for (int i=0; i<serverTextures.length; i++)
 		{
@@ -598,6 +610,10 @@ public class Tier1GX implements IGX {
 				{
 					return sprites[subindex].tex;
 				}
+				else if (supersub == GX_SPRITE_VAR_MCTEX)
+				{
+					return sprites[subindex].mctex;
+				}
 			}
 		}
 		return null;
@@ -731,8 +747,17 @@ public class Tier1GX implements IGX {
 					
 					bado.writeByte(GX_SET_SPRITE_VAR);
 					bado.writeByte(i);
-					bado.writeByte(GX_SPRITE_VAR_TEX);
-					bado.writeByte(sprite.tex);
+					if (sprite.mctex == null)
+					{
+						bado.writeByte(GX_SPRITE_VAR_TEX);
+						bado.writeByte(sprite.tex);
+					}
+					else
+					{
+						bado.writeByte(GX_SPRITE_VAR_MCTEX);
+						bado.writeByte(sprite.mctex.length());
+						bado.write(sprite.mctex.getBytes());
+					}
 				}
 			}
 			packets.add(Pair.of(DataType.FIFO, bado.toByteArray()));

@@ -7,4 +7,5 @@ public class GXSprite {
 	public short ix, iy;
 	public byte tex;
 	public int color = 0xFFFFFFFF;
+	public String mctex;
 }

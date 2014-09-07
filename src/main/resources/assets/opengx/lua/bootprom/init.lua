@@ -5,6 +5,7 @@ tmpfs = computer.tmpAddress() and component.proxy(computer.tmpAddress())
 modem = component.list("modem")()
 if modem then modem = component.proxy(modem) end
 buttons = component.proxy(component.list("buttons")())
+sensors = component.proxy(component.list("sensors")())
 
 function loadfile(file,...)
 	local fh = defaultfs.open(file,"r")
@@ -22,6 +23,10 @@ function dofile(file,...)
 	return assert(loadfile(file,"="..file))(...)
 end
 
+function require(lib)
+	return dofile("lib/"..lib:gsub("%.","/")..".lua")
+end
+
 local promaddr
 for addr, typ in component.list("prom",true) do
 	promaddr = addr
@@ -33,9 +38,8 @@ end
 prom = component.proxy(promaddr)
 
 --load the gx library--
-gx = dofile("lib/gx.lua")
-term = dofile("lib/term-t"..gx.getTier()..".lua")
-nc = dofile("lib/netcerial.lua")
+gx = require("gx")
+term = require("term-t"..gx.getTier())
 
 if buttons.isDown "actionmod" then
 	--enter netflash mode!--
@@ -95,7 +99,7 @@ if buttons.isDown "actionmod" then
 	term.cursor(1,8)
 	term.write("Press any button to reboot")
 	term.update()
-	--we reboot because of potential memory problems this can cause--
+	--we reboot because of potential garbage collector problems this can cause--
 	while true do
 		local event, b = computer.pullSignal()
 		if event == "button" then

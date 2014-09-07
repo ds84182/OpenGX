@@ -8,6 +8,7 @@ public class GXPolygon {
 	public float[] x, y, u, v;
 	public int color;
 	public byte tex = -1;
+	public String mctex;
 	
 	public GXPolygon(ByteArrayDataInput fifo, GXMatrix mtx)
 	{
@@ -16,6 +17,19 @@ public class GXPolygon {
 
 	public void update(ByteArrayDataInput fifo, GXMatrix mtx) {
 		tex = fifo.readByte();
+		if (tex == -2)
+		{
+			//mctex breh
+			byte len = fifo.readByte();
+			byte[] data = new byte[len];
+			fifo.readFully(data);
+			mctex = new String(data);
+			if (mctex.startsWith("minecraft:"))
+			{
+				mctex = mctex.substring(10); //so people won't have that stupid ass namespace error shit.
+				//TODO: reference from block names completely
+			}
+		}
 		color = fifo.readInt();
 		int len = Math.min(16, fifo.readByte());
 		x = new float[len];
@@ -30,6 +44,11 @@ public class GXPolygon {
 			{
 				u[i] = fifo.readFloat();
 				v[i] = fifo.readFloat();
+			}
+			if (tex == -2)
+			{
+				u[i] = Math.min(Math.abs(u[i]), 1.0F);//clamp values so we can't
+				v[i] = Math.min(Math.abs(v[i]), 1.0F);//do evil things
 			}
 		}
 	}

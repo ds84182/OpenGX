@@ -65,6 +65,10 @@ function term.cursor(nx,ny)
 	term.updateCursor()
 end
 
+function term.next()
+	term.cursor(1,y+1)
+end
+
 function term.write(str)
 	str = tostring(str)
 	local w, h = term.resolution()

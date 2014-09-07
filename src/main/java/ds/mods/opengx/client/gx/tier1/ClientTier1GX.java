@@ -4,6 +4,10 @@ import java.io.ByteArrayInputStream;
 import java.util.zip.GZIPInputStream;
 
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.texture.TextureAtlasSprite;
+import net.minecraft.client.renderer.texture.TextureMap;
+import net.minecraft.client.renderer.texture.TextureUtil;
+import net.minecraft.init.Blocks;
 
 import org.lwjgl.opengl.GL11;
 
@@ -97,14 +101,37 @@ public class ClientTier1GX extends Tier1GX {
 		{
 			GXSprite spr = sprites[i];
 			if (spr == null) continue;
-			GXTexture tex = textures[spr.tex];
-			if (tex == null) continue;
-			float ixu = spr.ix/((float)tex.width);
-			float iyv = spr.iy/((float)tex.height);
-			float upix = 1/(float)tex.width;
-			float vpix = 1/(float)tex.height;
-			GL11.glBindTexture(GL11.GL_TEXTURE_2D, tex.getGlTextureId());
-			RenderUtils.texturedRectangle(spr.x, spr.y, spr.w, spr.h, ixu, iyv, ixu+(upix*spr.w), iyv+(vpix*spr.h), spr.color);
+			if (spr.mctex == null)
+			{
+				GXTexture tex = textures[spr.tex];
+				if (tex == null) continue;
+				float ixu = spr.ix/((float)tex.width);
+				float iyv = spr.iy/((float)tex.height);
+				float upix = 1/(float)tex.width;
+				float vpix = 1/(float)tex.height;
+				GL11.glBindTexture(GL11.GL_TEXTURE_2D, tex.getGlTextureId());
+				RenderUtils.texturedRectangle(spr.x, spr.y, spr.w, spr.h, ixu, iyv, ixu+(upix*spr.w), iyv+(vpix*spr.h), spr.color);
+			}
+			else
+			{
+				TextureMap map = (TextureMap) Minecraft.getMinecraft().renderEngine.getTexture(TextureMap.locationBlocksTexture);
+				TextureAtlasSprite invalid = map.getAtlasSprite("holyshitinvalidasfuk:yesveryinvalid");
+				TextureAtlasSprite mctex;
+				if ((mctex = map.getAtlasSprite(spr.mctex)) == invalid)
+				{
+					map = (TextureMap) Minecraft.getMinecraft().renderEngine.getTexture(TextureMap.locationItemsTexture);
+					mctex = map.getAtlasSprite(spr.mctex);
+				}
+				float pixel = (mctex.getMaxU()-mctex.getMinU())/16F;
+				float fakeIX = spr.ix*pixel;
+				float fakeIY = spr.iy*pixel;
+				float deltau = mctex.getMaxU()-mctex.getMinU();
+				float deltav = mctex.getMaxV()-mctex.getMinV();
+				GL11.glBindTexture(GL11.GL_TEXTURE_2D, map.getGlTextureId());
+				float deltaum = Math.min(spr.w/16F,1F);//stretch the block
+				float deltavm = Math.min(spr.h/16F,1F);//don't access other icons
+				RenderUtils.texturedRectangle(spr.x, spr.y, spr.w, spr.h, mctex.getMinU()+fakeIX, mctex.getMinV()+fakeIY, mctex.getMinU()+(deltau*deltaum), mctex.getMinV()+(deltav*deltavm), spr.color);
+			}
 		}
 	}
 	

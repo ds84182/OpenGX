@@ -99,6 +99,7 @@ public class ClientTier2GX extends Tier2GX {
 		}
 		else
 		{
+			this.requestRender = false;
 			if (displayList < 0)
 			{
 				addDisplayList();
@@ -157,7 +158,7 @@ public class ClientTier2GX extends Tier2GX {
 			if (clear)
 			{
 				GL11.glClearColor(cR, cG, cB, cA);
-				GL11.glClear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT); // Clear Screen And Depth Buffer on the fbo to red
+				GL11.glClear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT); // Clear Screen And Depth Buffer on the fbo
 			}
 			GL11.glCallList(displayList);
 		}

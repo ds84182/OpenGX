@@ -138,7 +138,7 @@ public class ComponentGX extends Component implements ManagedEnvironment {
 	
 	public void tryInitGX()
 	{
-		if (gx == null)
+		if (gx == null && tier > 0)
 		{
 			try {
 				gx = (IGX)Class.forName(String.format(worldObj.isRemote ? clientGXFormat : serverGXFormat, tier, tier)).newInstance();
@@ -148,7 +148,6 @@ public class ComponentGX extends Component implements ManagedEnvironment {
 				e.printStackTrace();
 			} catch (ClassNotFoundException e) {
 				e.printStackTrace();
-				tier = 1;
 			}
 		}
 	}
